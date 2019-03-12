@@ -20,6 +20,5 @@ from pi_django import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.main_page),
-    path('services/', views.services_page),
     path('profile/', views.profile_page)
 ]

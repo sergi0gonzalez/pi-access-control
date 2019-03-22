@@ -9,14 +9,11 @@ As result of the first phase of the prototype development, we present in this se
 
 #### Actors
 
- * Security Agent
-Person in charge of register the people in and out, who is allowed to enter the building, should be sitting at the front desk, and have access to the security dashboard.
+ * [Security Agent] - Person in charge of register the people in and out, who is allowed to enter the building, should be sitting at the front desk, and have access to the security dashboard.
 
- * IEETA Personnel
-Teachers, researchers and staff who should be granted access to the building
+ * [IEETA Personnel] - Teachers, researchers and staff who should be granted access to the building
 
- * Visitor
-Any person who desires access to the building, this may either be university staff, students, researchers. This actor may or may not already have a UA universal user.
+ * [Visitor] - Any person who desires access to the building, this may either be university staff, students, researchers. This actor may or may not already have a UA universal user.
 
 #### Use Cases
 
@@ -36,3 +33,6 @@ Physical architecture of the system
 ![alt text](https://raw.githubusercontent.com/sergi0gonzalez/pi-access-control/master/images/PhysicalModel.png)
 
 ### Technological Model
+
+Technologies of the system
+![alt text](https://raw.githubusercontent.com/sergi0gonzalez/pi-access-control/master/images/TechnologicalModel.png)

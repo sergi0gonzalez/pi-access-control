@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 
+
 def main_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
@@ -76,7 +77,6 @@ def register_page(request):
         else:
             user = User.objects.create_user(signup_email, password=signup_password)
             return redirect('/')
-
     else:
         return render(request, 'register.html', tparams)
 
@@ -84,7 +84,3 @@ def register_page(request):
 def logout_page(request):
     logout(request)
     return redirect('/')
-
-
-def api_test(request):
-    return JsonResponse({"status":"OK"})

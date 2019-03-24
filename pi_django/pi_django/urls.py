@@ -24,5 +24,6 @@ urlpatterns = [
     path('login/', views.login_page),
     path('register/', views.register_page),
     path('logout/', views.logout_page),
+    path('sec_dashboard/', views.security_dashboard),
     path('api/', include('api.urls'))
 ]

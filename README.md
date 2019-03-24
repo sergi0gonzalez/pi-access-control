@@ -8,6 +8,7 @@ As result of the first phase of the prototype development, we present in this se
 ### Requirements Elicitation
 
 #### Actors
+ * [System Administrator] - Person in charge with credential administration, logs verification, grant/revoke permissions
 
  * [Security Agent] - Person in charge of register the people in and out, who is allowed to enter the building, should be sitting at the front desk, and have access to the security dashboard.
 
@@ -21,11 +22,22 @@ Sequence of actions, related to the building access, using a Mobile App or a Sma
 ![alt text](https://raw.githubusercontent.com/sergi0gonzalez/pi-access-control/master/images/MobileAppSeq.png)
 
 #### Non-functional requirements
+ * [Security]
 
+ * [Usability]
+
+ * [Integrability]
+
+ * [Scalability]
+
+ * [Portability]
 
 ## System Architecture
 
 ### Domain Model
+
+Entities, Roles and Relationships of the system
+![alt_text](https://raw.githubusercontent.com/sergi0gonzalez/pi-access-control/master/images/DomainModel.png)
 
 ### Physical Model
 

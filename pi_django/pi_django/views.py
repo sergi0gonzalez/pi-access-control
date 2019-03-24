@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
+from pi_django.models import Credential
+import re
 
 
 def main_page(request):
@@ -12,16 +13,6 @@ def main_page(request):
         tparams["username"] = request.user.username
 
     return render(request, 'index.html', tparams)
-
-
-def profile_page(request):
-    logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in}
-
-    if logged_in:
-        tparams["username"] = request.user.username
-
-    return render(request, 'profile.html', tparams)
 
 
 def login_page(request):
@@ -54,9 +45,9 @@ def register_page(request):
         tparams["error"] = False
         tparams["error_reason"] = None
         # TODO: additional validations
-        if request.POST['signup_email'] == '':
+        if request.POST['signup_email'] == '' or not re.match(r'[^@]+', request.POST['signup_email']):
             tparams["signup_error"] = True
-            tparams["signup_error_reason"] = "Please insert an email."
+            tparams["signup_error_reason"] = "Please insert an valid email."
             return render(request, 'register.html', tparams)
         elif User.objects.filter(username=request.POST['signup_email']).exists():
             tparams['signup_error'] = True
@@ -75,7 +66,10 @@ def register_page(request):
             tparams['signup_error_reason'] = 'Passwords don\'t match!'
             return render(request, 'register.html', tparams)
         else:
-            user = User.objects.create_user(signup_email, password=signup_password)
+            user = User.objects.create_user(username=signup_email, email=signup_email, password=signup_password)
+            user.first_name = request.POST['signup_first_name']
+            user.last_name = request.POST['signup_last_name']
+            user.save()
             return redirect('/')
     else:
         return render(request, 'register.html', tparams)
@@ -84,3 +78,36 @@ def register_page(request):
 def logout_page(request):
     logout(request)
     return redirect('/')
+
+
+def profile_page(request):
+    logged_in = request.user.is_authenticated
+    tparams = {'logged_in': logged_in, 'nfc': False}
+
+    if logged_in:
+        tparams["username"] = request.user.username
+        user = User.objects.get(username=request.user.username)
+        tparams['email'] = user.email
+        tparams['first_name'] = user.first_name
+        tparams['last_name'] = user.last_name
+        if Credential.objects.filter(user=user).exists():
+            for cred in Credential.objects.filter(user=user):
+                if cred.associated_name == 'NFC':
+                    tparams['nfc'] = True
+
+    if request.method == 'POST':
+        if request.POST['nfc'] == 'On':
+            user = User.objects.get(username=request.user.username)
+            cred = Credential(associated_name='NFC', user=user)
+            cred.save()
+
+    return render(request, 'profile.html', tparams)
+
+
+def security_dashboard(request):
+    logged_in = request.user.is_authenticated
+    tparams = {'logged_in': logged_in}
+
+    if logged_in:
+        tparams["username"] = request.user.username
+    return render(request, 'sec_dashboard.html', tparams)

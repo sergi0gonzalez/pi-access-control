@@ -1,13 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-
-class User(models.Model):
+'''
+class User(AbstractUser):
     name = models.CharField(max_length=70)
     email = models.EmailField()
     cc_public_key = models.TextField()
 
     def __str__(self):
         return self.name
+'''
 
 
 class Credential(models.Model):

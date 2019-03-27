@@ -17,50 +17,12 @@
   <!-- Custom styles for this template -->
   <link href="{% static "css/small-business.css" %}" rel="stylesheet">
 
-  <!-- Font awesome icons -->
+     <!-- Font awesome icons -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
-    <style>
-        .project-tab {
-    padding: 10%;
-    margin-top: -8%;
-}
-.project-tab #tabs{
-    background: #007b5e;
-    color: #eee;
-}
-.project-tab #tabs h6.section-title{
-    color: #eee;
-}
-.project-tab #tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    color: #0062cc;
-    background-color: transparent;
-    border-color: transparent transparent #f3f3f3;
-    border-bottom: 3px solid !important;
-    font-size: 16px;
-    font-weight: bold;
-}
-.project-tab .nav-link {
-    border: 1px solid transparent;
-    border-top-left-radius: .25rem;
-    border-top-right-radius: .25rem;
-    color: #0062cc;
-    font-size: 16px;
-    font-weight: 600;
-}
-.project-tab .nav-link:hover {
-    border: none;
-}
-.project-tab thead{
-    background: #f3f3f3;
-    color: #333;
-}
-.project-tab a{
-    text-decoration: none;
-    color: #333;
-    font-weight: 600;
-}
-    </style>
+
+
+
 </head>
 
 <body style="padding-bottom: 70px;">
@@ -75,7 +37,8 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
+            <a class="nav-link" href="/">Home
+            </a>
           </li>
             <li class="nav-item">
             <a class="nav-link" href="/mobile_app">Mobile App</a>
@@ -85,7 +48,7 @@
                 Services
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item active" href="/profile">Profile</a>
+              <a class="dropdown-item" href="/profile">User Profile</a>
               <a class="dropdown-item" href="/personnel">Personnel Area</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
@@ -93,13 +56,11 @@
           </li>
         </ul>
           <ul class="nav navbar-nav">
-
               {% ifequal logged_in True %}
-
               <div class="dropdown">
-                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ username }}</strong></a>
+                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>User</strong></a>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <a class="dropdown-item" href="/logout" type="submit">Log Out</a>
+                    <a class="dropdown-item" href="logout" type="submit">Log Out</a>
                   </div>
               </div>
 
@@ -113,45 +74,43 @@
     </div>
   </nav>
 
-
   <!-- Page Content -->
-  <div class="container" style="margin-top:20px; margin-bottom:20px;">
-      <h2>Personal Info</h2>
-      Email: {{ email }}
-      <br/>
-      First Name: {{ first_name }}
-      <br/>
-      Last Name: {{ last_name }}
-
-      <br/>
-
-      <h3>Authentication Methods</h3>
-      <form action="." name="authForm" method="post">
+  <div class="container" style="margin-top:30px; width:400px;">
+          <h2>Register</h2>
+          <form action="." name="registerForm" method="post">
               {% csrf_token %}
-              {% ifequal nfc False %}
-                  <div class="form-group">
-                      <input type="checkbox" name="nfc" value="On"> NFC Authentication</br>
+                <div class="form-group">
+                    <label for="exampleInputUsername2">E-mail</label>
+                    <input name="signup_email" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
                   </div>
-              {% else %}
+                <div class="form-group">
+                    <label for="exampleInputPassword2">First Name</label>
+                    <input name="signup_first_name" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword2">Last Name</label>
+                    <input name="signup_last_name" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
+                </div>
                   <div class="form-group">
-                      <input type="checkbox" name="nfc" value="On" checked> NFC Authentication</br>
-                  </div>
-              {% endifequal %}
-              <div class="form-group">
                     <label for="exampleInputPassword2">Password</label>
-                    <input name="nfc_password" type="password" class="form-control" id="exampleInputPassword2" >
-              </div>
-              <div class="form-group">
-                  <input type="checkbox" name="cc" value="On"> CC Authentication</br>
-              </div>
-              <button type="submit" class=""><i style="margin-right: 8px" class=""></i>Save</button>
-              <button type="reset" class=""><i style="margin-right: 8px" class=""></i>Cancel</button>
+                    <input name="signup_password" type="password" class="form-control" id="exampleInputPassword2" >
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleInputPassword2">Confirm Password</label>
+                    <input name="signup_confpassword" type="password" class="form-control" id="exampleInputPassword2" >
+                  </div>
+                    {% ifequal signup_error True %}
+                    <div class="alert alert-danger" id="signup_error" role="alert">
+                        Error: {{ signup_error_reason }}
+                    </div>
+                    {% endifequal %}
+              <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
           </form>
   </div>
   <!-- /.container -->
 
   <!-- Footer -->
-  <footer class=" bg-dark navbar fixed-bottom">
+  <footer class="bg-dark navbar fixed-bottom">
     <div class="container">
       <p class="m-0 text-center text-white">Copyright &copy; Your Website 2019</p>
     </div>
@@ -163,5 +122,4 @@
   <script src="{% static "vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 
 </body>
-
 </html>

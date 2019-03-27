@@ -64,6 +64,10 @@
                   </div>
               </div>
 
+              {% else %}
+
+              <a class="btn btn-success" href="/register" style="margin-left: 8px;"><i style="margin-right: 8px" class="fas fa-sign-in-alt"></i> Sign Up </a>
+
               {% endifequal %}
           </ul>
       </div>
@@ -76,8 +80,8 @@
           <form action="." name="loginForm" method="post">
               {% csrf_token %}
                 <div class="form-group">
-                    <label for="exampleInputUsername1">Username</label>
-                    <input name="login_username" type="text" class="form-control" id="exampleInputUsername1" aria-describedby="usernameHelp" >
+                    <label for="exampleInputUsername1">E-mail</label>
+                    <input name="login_email" type="text" class="form-control" id="exampleInputUsername1" aria-describedby="usernameHelp" >
                   </div>
                   <div class="form-group">
                     <label for="exampleInputPassword1">Password</label>
@@ -90,34 +94,6 @@
                     {% endifequal %}
               <button type="submit" class="btn btn-success btn-block" ><i style="margin-right: 8px" class="fas fa-sign-in-alt"> </i> Sign In</button>
           </form>
-
-      <hr/>
-
-          <h2>Register</h2>
-          <form action="." name="registerForm" method="post">
-                    {% csrf_token %}
-                  <div class="form-group">
-                    <label for="exampleInputUsername2">Username</label>
-                    <input name="signup_username" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp" >
-                  </div>
-                  <div class="form-group">
-                    <label for="exampleInputPassword2">Password</label>
-                    <input name="signup_password" type="password" class="form-control" id="exampleInputPassword2" >
-                  </div>
-                    {% ifequal signup_error True %}
-                    <div class="alert alert-danger" style="display:none;" id="login_error" role="alert">
-                        Error: {{ signup_error_reason }}
-                    </div>
-                    {% endifequal %}
-              <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
-          </form>
-
-      </div>
-
-
-
-
-
   </div>
   <!-- /.container -->
 

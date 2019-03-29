@@ -1,54 +1,26 @@
-from django.http import JsonResponse
-from django.contrib.auth.models import User
 from tools.crypto import Asymmetric, Symmetric, HMAC
-import base64
+import requests
 import json
 import sys
-import os
 
-try:
-    RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
-except FileNotFoundError:
-    print('Raspberry public key not found!')
-    sys.exit(0)
+SERVER_RSAPUB_KEY = 'server_rsa.pub'
+SERVER_SIGNPUB_KEY = 'server_ecc.pub'
 
 __asym_obj = Asymmetric()
 __sym_obj = Symmetric()
 __hmac_obj = HMAC()
 # TODO: load private keys, ask for password
-__rsa_priv = __asym_obj.load_private_key('tools/server_rsa', 'qwerty')
-__ecc_priv = __asym_obj.load_private_key('tools/server_ecc', 'qwerty')
+__rsa_priv = __asym_obj.load_private_key('rasp_rsa', 'qwerty')
+__ecc_priv = __asym_obj.load_private_key('rasp_ecc', 'qwerty')
 
-
-def api_test(request):
-    return JsonResponse({"status": "OK"})
-
-
-def user_test(request):
-    print(User.objects.all())
-    return JsonResponse({'status': 'OK'})
-
-
-def check_credentials(request):
-    if request.method == 'POST':
-        return JsonResponse({'status': 'OK'})
-    elif request.method == 'GET':
-        return JsonResponse({'status': 'Not OK'})
-
-
-def nfc_challenge(request):
-    if request.method == 'GET':
-        data = {'nonce': base64.b64encode(os.urandom(32)).decode()}
-        print(data)
-        msg = create_msg_to_send(data, RASP_RSAPUB_KEY)
-        return JsonResponse(msg)
-    else:
-        msg = create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY)
-        return JsonResponse(msg)
-
-
-def nfc_response(request):
-    return JsonResponse({'status': 'OK'})
+def get_nfc_challenge():
+    response = requests.get('http://localhost:8000/api/nfc_challenge').json()
+    print(response)
+    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
+    if 'error' in msg:
+        print('Error(...)', msg)
+        return
+    print(msg)
 
 
 def create_msg_to_send(data, public_key):
@@ -99,3 +71,6 @@ def check_hmac(key, data, digest):
 def verify_signature_msg(signature, msg, public_key):
     sign_key = __asym_obj.load_public_key(public_key)
     return __asym_obj.verify_sign(sign_key, msg.encode(), signature)
+
+get_nfc_challenge()
+

@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
 from pi_django.models import Credential
 import re
 
@@ -96,8 +95,9 @@ def profile_page(request):
                     tparams['nfc'] = True
 
     if request.method == 'POST':
-        if request.POST['nfc'] == 'On':
-            user = User.objects.get(username=request.user.username)
+        user = User.objects.get(username=request.user.username)
+        if request.POST['nfc'] == 'On' and request.POST['nfc_password'] != '' and \
+                not Credential.objects.filter(user=user, associated_name='NFC').exists():
             cred = Credential(associated_name='NFC', user=user)
             cred.save()
 

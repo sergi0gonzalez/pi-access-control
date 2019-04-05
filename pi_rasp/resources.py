@@ -1,7 +1,13 @@
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.twofactor.totp import TOTP
+from cryptography.hazmat.primitives.hashes import SHA256
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from tools.crypto import Asymmetric, Symmetric, HMAC
 import requests
 import json
+import time
 import sys
+
 
 SERVER_RSAPUB_KEY = 'server_rsa.pub'
 SERVER_SIGNPUB_KEY = 'server_ecc.pub'
@@ -13,14 +19,30 @@ __hmac_obj = HMAC()
 __rsa_priv = __asym_obj.load_private_key('rasp_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('rasp_ecc', 'qwerty')
 
+
 def get_nfc_challenge():
-    response = requests.get('http://localhost:8000/api/nfc_challenge').json()
+    response = requests.get('http://10.42.0.1:8080/api/nfc_challenge').json()
     print(response)
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     if 'error' in msg:
         print('Error(...)', msg)
         return
     print(msg)
+
+def send_audio_credential(identity, otp):
+    #key = b'\xc9~I)\xef@\x1f\x16W\xd7\xe9)V\x01\x84d\x97\x9a\xe8K\xc2(\xb2\xac?c\xc5\xf1\x9c\xb0@\x12'
+    #totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
+    #totp_value = totp.generate(time.time())
+    data = {'identity': identity, 'password': otp}
+    msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
+    response = requests.post('http://10.42.0.1:8080/api/audio_credential/', data=msg).json()
+    #print(response)
+    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
+    if 'error' in msg:
+        print('Error(...)', msg)
+        return
+    print(msg)
+
 
 
 def create_msg_to_send(data, public_key):
@@ -72,5 +94,6 @@ def verify_signature_msg(signature, msg, public_key):
     sign_key = __asym_obj.load_public_key(public_key)
     return __asym_obj.verify_sign(sign_key, msg.encode(), signature)
 
-get_nfc_challenge()
+#get_nfc_challenge()
+#send_audio_credential()
 

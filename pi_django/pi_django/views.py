@@ -1,8 +1,13 @@
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.hashes import SHA256
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from pi_django.models import Credential
+import base64
 import re
+import os
 
 
 def main_page(request):
@@ -81,7 +86,7 @@ def logout_page(request):
 
 def profile_page(request):
     logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in, 'nfc': False}
+    tparams = {'logged_in': logged_in, 'nfc': False, 'audio': False}
 
     if logged_in:
         tparams["username"] = request.user.username
@@ -93,12 +98,22 @@ def profile_page(request):
             for cred in Credential.objects.filter(user=user):
                 if cred.associated_name == 'NFC':
                     tparams['nfc'] = True
+                if cred.associated_name == 'Audio':
+                    tparams['audio'] = True
 
     if request.method == 'POST':
         user = User.objects.get(username=request.user.username)
         if request.POST['nfc'] == 'On' and request.POST['nfc_password'] != '' and \
                 not Credential.objects.filter(user=user, associated_name='NFC').exists():
             cred = Credential(associated_name='NFC', user=user)
+            cred.save()
+        elif request.POST['audio'] == 'On' and request.POST['audio_password'] != '' and \
+                not Credential.objects.filter(user=user, associated_name='Audio').exists():
+            cred = Credential(associated_name='Audio', user=user)
+            salt = os.urandom(16)
+            kdf = PBKDF2HMAC(algorithm=SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
+            key = kdf.derive(request.POST['audio_password'].encode())
+            cred.data = base64.b64encode(key).decode()
             cred.save()
 
     return render(request, 'profile.html', tparams)

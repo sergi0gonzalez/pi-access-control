@@ -1,16 +1,20 @@
-from django.http import JsonResponse
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.twofactor.totp import TOTP, InvalidToken
+from cryptography.hazmat.primitives.hashes import SHA256
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from pi_django.models import Credential
 from tools.crypto import Asymmetric, Symmetric, HMAC
 import base64
 import json
-import sys
+import time
 import os
 
-try:
-    RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
-except FileNotFoundError:
-    print('Raspberry public key not found!')
-    sys.exit(0)
+
+RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
+RASP_ECCPUB_KEY = 'tools/rasp_ecc.pub'
+
 
 __asym_obj = Asymmetric()
 __sym_obj = Symmetric()
@@ -20,20 +24,17 @@ __rsa_priv = __asym_obj.load_private_key('tools/server_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('tools/server_ecc', 'qwerty')
 
 
-def api_test(request):
-    return JsonResponse({"status": "OK"})
-
-
 def user_test(request):
     print(User.objects.all())
     return JsonResponse({'status': 'OK'})
 
 
-def check_credentials(request):
+def api_test(request):
+    print(request.method)
     if request.method == 'POST':
-        return JsonResponse({'status': 'OK'})
-    elif request.method == 'GET':
-        return JsonResponse({'status': 'Not OK'})
+        return JsonResponse({'status': 'POST'})
+    if request.method == 'GET':
+        return JsonResponse({'status': 'GET'})
 
 
 def nfc_challenge(request):
@@ -49,6 +50,25 @@ def nfc_challenge(request):
 
 def nfc_response(request):
     return JsonResponse({'status': 'OK'})
+
+
+@csrf_exempt
+def check_audio_credential(request):
+    if request.method == 'POST':
+        msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
+        msg = json.loads(msg)
+        user = User.objects.get(username=msg['identity'])
+        if Credential.objects.filter(user=user, associated_name='Audio').exists():
+            cred = Credential.objects.get(user=user, associated_name='Audio')
+            key = base64.b64decode(cred.data.encode())
+            totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
+            try:
+                totp.verify(msg['password'].encode(), time.time())
+            except InvalidToken:
+                return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
+            return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+    else:
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
 
 
 def create_msg_to_send(data, public_key):

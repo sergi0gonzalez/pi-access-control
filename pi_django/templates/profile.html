@@ -141,6 +141,19 @@
                     <label for="exampleInputPassword2">Password</label>
                     <input name="nfc_password" type="password" class="form-control" id="exampleInputPassword2" >
               </div>
+              {% ifequal audio False %}
+                  <div class="form-group">
+                      <input type="checkbox" name="audio" value="On"> Audio Authentication</br>
+                  </div>
+              {% else %}
+                  <div class="form-group">
+                      <input type="checkbox" name="audio" value="On" checked> Audio Authentication</br>
+                  </div>
+              {% endifequal %}
+              <div class="form-group">
+                    <label for="exampleInputPassword2">Password</label>
+                    <input name="audio_password" type="password" class="form-control" id="exampleInputPassword2" >
+              </div>
               <div class="form-group">
                   <input type="checkbox" name="cc" value="On"> CC Authentication</br>
               </div>

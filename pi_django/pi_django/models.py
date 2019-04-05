@@ -1,16 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-'''
-class User(AbstractUser):
-    name = models.CharField(max_length=70)
-    email = models.EmailField()
-    cc_public_key = models.TextField()
-
-    def __str__(self):
-        return self.name
-'''
-
 
 class Credential(models.Model):
     associated_name = models.CharField(max_length=70)
@@ -29,5 +19,3 @@ class Log(models.Model):
 
     def __str__(self):
         return self.time_stamp
-
-

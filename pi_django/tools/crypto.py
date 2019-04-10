@@ -64,8 +64,8 @@ class Asymmetric(object):
         try:
             public_key.verify(base64.b64decode(signature), msg, ec.ECDSA(hashes.SHA512()))
         except InvalidSignature:
-            return True
-        return False
+            return False
+        return True
 
 
 class Symmetric(object):

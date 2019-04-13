@@ -5,12 +5,12 @@ from django.contrib.auth.models import User
 class UniversalUser(models.Model):
     name = models.CharField(max_length=120)
     e_mail = models.CharField(max_length=70)
+    n_mec = models.IntegerField()
 
 
 class Permissions(models.Model):
-    access = models.BooleanField()
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_time = models.DateField()
+    end_time = models.DateField(blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     universal_user = models.ForeignKey(UniversalUser, on_delete=models.CASCADE, null=True)
 

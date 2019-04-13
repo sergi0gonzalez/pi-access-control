@@ -20,7 +20,7 @@ def main_page(request):
 
 
 def login_page(request):
-    tparams={}
+    tparams = {}
 
     if "login_email" in request.POST:
         login_email = request.POST["login_email"]
@@ -48,7 +48,6 @@ def register_page(request):
         signup_password = request.POST["signup_password"]
         tparams["error"] = False
         tparams["error_reason"] = None
-        # TODO: additional validations
         if request.POST['signup_email'] == '' or not re.match(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)',
                                                               request.POST['signup_email']):
             tparams["signup_error"] = True
@@ -62,7 +61,7 @@ def register_page(request):
             tparams["signup_error"] = True
             tparams["signup_error_reason"] = "Please insert a password."
             return render(request, 'register.html', tparams)
-        elif len(signup_password) < 5:
+        elif len(signup_password) < 9:
             tparams["signup_error"] = True
             tparams["signup_error_reason"] = "Password too short."
             return render(request, 'register.html', tparams)

@@ -49,9 +49,10 @@ def register_page(request):
         tparams["error"] = False
         tparams["error_reason"] = None
         # TODO: additional validations
-        if request.POST['signup_email'] == '' or not re.match(r'[^@]+', request.POST['signup_email']):
+        if request.POST['signup_email'] == '' or not re.match(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)',
+                                                              request.POST['signup_email']):
             tparams["signup_error"] = True
-            tparams["signup_error_reason"] = "Please insert an valid email."
+            tparams["signup_error_reason"] = "Please insert a valid email."
             return render(request, 'register.html', tparams)
         elif User.objects.filter(username=request.POST['signup_email']).exists():
             tparams['signup_error'] = True
@@ -71,8 +72,11 @@ def register_page(request):
             return render(request, 'register.html', tparams)
         else:
             user = User.objects.create_user(username=signup_email, email=signup_email, password=signup_password)
-            user.first_name = request.POST['signup_first_name']
-            user.last_name = request.POST['signup_last_name']
+            user.name = request.POST['signup_full_name']
+            if not request.POST['signup_id_number'] == '':
+                user.id_number = request.POST['signup_id_number']
+            else:
+                user.id_number = None
             user.save()
             return redirect('/')
     else:

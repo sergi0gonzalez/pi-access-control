@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from pi_django.models import Credential
+from pi_django.models import Credential, Permissions
 import base64
 import re
 import os
@@ -71,12 +71,10 @@ def register_page(request):
             return render(request, 'register.html', tparams)
         else:
             user = User.objects.create_user(username=signup_email, email=signup_email, password=signup_password)
-            user.name = request.POST['signup_full_name']
-            if not request.POST['signup_id_number'] == '':
-                user.id_number = request.POST['signup_id_number']
-            else:
-                user.id_number = None
+            user.last_name = request.POST['signup_full_name']
             user.save()
+            perm = Permissions(user=user)
+            perm.save()
             return redirect('/')
     else:
         return render(request, 'register.html', tparams)
@@ -89,20 +87,21 @@ def logout_page(request):
 
 def profile_page(request):
     logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in, 'nfc': False, 'audio': False}
+    tparams = {'logged_in': logged_in, 'nfc': False, 'audio': False, 'cc': False}
 
     if logged_in:
         tparams["username"] = request.user.username
         user = User.objects.get(username=request.user.username)
         tparams['email'] = user.email
-        tparams['first_name'] = user.first_name
-        tparams['last_name'] = user.last_name
+        tparams['full_name'] = user.last_name
         if Credential.objects.filter(user=user).exists():
             for cred in Credential.objects.filter(user=user):
                 if cred.associated_name == 'NFC':
                     tparams['nfc'] = True
                 if cred.associated_name == 'Audio':
                     tparams['audio'] = True
+                if cred.associated_name == 'CitizensCard':
+                    tparams['cc'] = True
 
     if request.method == 'POST':
         user = User.objects.get(username=request.user.username)
@@ -118,18 +117,31 @@ def profile_page(request):
             key = kdf.derive(request.POST['audio_password'].encode())
             cred.data = base64.b64encode(key).decode()
             cred.save()
+        elif request.POST['cc'] == 'On' and request.POST['id_number'] != '' and \
+                not Credential.objects.filter(user=user, associated_name='CitizensCard').exists():
+            cred = Credential(associated_name='CitizensCard', user=user)
+            cred.data = request.POST['id_number']
+            cred.save()
 
     return render(request, 'profile.html', tparams)
 
 
 def mobile_page(request):
-    tparams = {}
+    logged_in = request.user.is_authenticated
+    tparams = {'logged_in': logged_in}
+
+    if logged_in:
+        tparams["username"] = request.user.username
     return render(request, 'mobile_app.html', tparams)
 
 
-def permissions_page(request):
-    tparams = {}
-    return render(request, 'permissions.html', tparams)
+def teacher_page(request):
+    logged_in = request.user.is_authenticated
+    tparams = {'logged_in': logged_in}
+
+    if logged_in:
+        tparams["username"] = request.user.username
+    return render(request, 'teacher_area.html', tparams)
 
 
 def security_dashboard(request):
@@ -137,5 +149,12 @@ def security_dashboard(request):
     tparams = {'logged_in': logged_in}
 
     if logged_in:
+        users = []
         tparams["username"] = request.user.username
+        permissions = Permissions.objects.filter(state=False)
+        for perm in permissions:
+            users.append(perm.user.username)
+            print(perm.user)
+
+        tparams['users'] = users
     return render(request, 'sec_dashboard.html', tparams)

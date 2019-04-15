@@ -4,16 +4,17 @@ from django.contrib.auth.models import User
 
 class UniversalUser(models.Model):
     name = models.CharField(max_length=120)
-    e_mail = models.CharField(max_length=70)
-    n_mec = models.IntegerField()
+    e_mail = models.CharField(max_length=70, primary_key=True)
+    n_mec = models.IntegerField(unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Permissions(models.Model):
-    start_time = models.DateField()
-    end_time = models.DateField(blank=True)
+    state = models.BooleanField(default=False)
+    start_time = models.DateField(blank=True, null=True)
+    end_time = models.DateField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     universal_user = models.ForeignKey(UniversalUser, on_delete=models.CASCADE, null=True)
 

@@ -7,6 +7,9 @@ class UniversalUser(models.Model):
     e_mail = models.CharField(max_length=70)
     n_mec = models.IntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class Permissions(models.Model):
     start_time = models.DateField()

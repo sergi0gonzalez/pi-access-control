@@ -122,6 +122,16 @@ def profile_page(request):
     return render(request, 'profile.html', tparams)
 
 
+def mobile_page(request):
+    tparams = {}
+    return render(request, 'mobile_app.html', tparams)
+
+
+def permissions_page(request):
+    tparams = {}
+    return render(request, 'permissions.html', tparams)
+
+
 def security_dashboard(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}

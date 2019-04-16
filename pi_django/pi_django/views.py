@@ -4,7 +4,8 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from pi_django.models import Credential, Permissions
+from pi_django.models import Credential, Permissions, UniversalUser, Log
+from django.utils import timezone
 import base64
 import re
 import os
@@ -115,6 +116,7 @@ def profile_page(request):
             salt = os.urandom(16)
             kdf = PBKDF2HMAC(algorithm=SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
             key = kdf.derive(request.POST['audio_password'].encode())
+            # print(key)
             cred.data = base64.b64encode(key).decode()
             cred.save()
         elif request.POST['cc'] == 'On' and request.POST['id_number'] != '' and \
@@ -149,12 +151,44 @@ def security_dashboard(request):
     tparams = {'logged_in': logged_in}
 
     if logged_in:
-        users = []
         tparams["username"] = request.user.username
         permissions = Permissions.objects.filter(state=False)
-        for perm in permissions:
-            users.append(perm.user.username)
-            print(perm.user)
+        tparams['permissions'] = permissions
+        accesses = Permissions.objects.filter(state=True)
+        tparams['accesses'] = accesses
+        logs = Log.objects.all().order_by('time_stamp').reverse()
+        tparams['logs'] = logs
 
-        tparams['users'] = users
+        if request.method == 'POST':
+            if 'perm' in request.POST:
+                for email in dict(request.POST)['perm']:
+                    if User.objects.filter(username=email).exists():
+                        user = User.objects.get(username=email)
+                        perm = Permissions.objects.get(user=user)
+                        perm.state = True
+                        perm.start_time = timezone.now()
+                        perm.end_time = None
+                        perm.save()
+                    elif UniversalUser.objects.filter(e_mail=email).exists():
+                        user = UniversalUser.objects.get(e_mail=email)
+                        perm = Permissions.objects.get(universal_user=user)
+                        perm.state = True
+                        perm.start_time = timezone.now()
+                        perm.end_time = None
+                        perm.save()
+            if 'access' in request.POST:
+                for email in dict(request.POST)['access']:
+                    if User.objects.filter(username=email).exists():
+                        user = User.objects.get(username=email)
+                        perm = Permissions.objects.get(user=user)
+                        perm.state = False
+                        perm.end_time = timezone.now()
+                        perm.save()
+                    elif UniversalUser.objects.filter(e_mail=email).exists():
+                        user = UniversalUser.objects.get(e_mail=email)
+                        perm = Permissions.objects.get(universal_user=user)
+                        perm.state = False
+                        perm.end_time = timezone.now()
+                        perm.save()
+
     return render(request, 'sec_dashboard.html', tparams)

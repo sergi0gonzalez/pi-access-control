@@ -13,8 +13,8 @@ class UniversalUser(models.Model):
 
 class Permissions(models.Model):
     state = models.BooleanField(default=False)
-    start_time = models.DateField(blank=True, null=True)
-    end_time = models.DateField(blank=True, null=True)
+    start_time = models.DateTimeField(blank=True, null=True)
+    end_time = models.DateTimeField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     universal_user = models.ForeignKey(UniversalUser, on_delete=models.CASCADE, null=True)
 
@@ -32,7 +32,7 @@ class Credential(models.Model):
 
 class Log(models.Model):
     log_type = models.CharField(max_length=10)
-    time_stamp = models.CharField(max_length=70)
+    time_stamp = models.DateTimeField()
     credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
 
     def __str__(self):

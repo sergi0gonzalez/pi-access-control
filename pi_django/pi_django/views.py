@@ -118,7 +118,6 @@ def profile_page(request):
 
     return render(request, 'profile.html', tparams)
 
-
 def security_dashboard(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}

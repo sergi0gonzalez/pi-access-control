@@ -25,7 +25,7 @@ SECRET_KEY = '6*6$ts+=6u26^(q=1+w6o7ec*ugatu0i8m0-=m-j_mk&a*w)t^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.42.0.1']
+ALLOWED_HOSTS = ['10.42.0.1','localhost', '127.0.0.1', '192.168.1.220']
 
 
 # Application definition
@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'pi_django',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'pi_django'
 ]
 
 MIDDLEWARE = [
@@ -126,3 +127,14 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 
+# rest settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated', )
+}
+
+# fix phone reqs
+#APPEND_SLASH=False

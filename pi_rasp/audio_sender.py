@@ -8,10 +8,10 @@ chirp = ChirpConnect()
 
 chirp.start(send=True, receive=False)
 
-key = b'\xc9~I)\xef@\x1f\x16W\xd7\xe9)V\x01\x84d\x97\x9a\xe8K\xc2(\xb2\xac?c\xc5\xf1\x9c\xb0@\x12'
+key = b'\r1\x01\x8c\xf3\xe7!@\xaf\xf5\x16\xbc\xb4\xba7\x9bx\xf2\x11\xe2\x9f\xeaW@{n\x10\x96h\xe0\xc6\x0c'
 totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
 totp_value = totp.generate(time.time())
-identifier = 'teste@2:'+totp_value.decode()
+identifier = 'test@ua.pt:'+totp_value.decode()
 
 payload = chirp.new_payload(identifier.encode())
 

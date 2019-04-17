@@ -25,5 +25,7 @@ urlpatterns = [
     path('register/', views.register_page),
     path('logout/', views.logout_page),
     path('sec_dashboard/', views.security_dashboard),
+    path('mobile_app/', views.mobile_page),
+    path('teacher_area/', views.teacher_page),
     path('api/', include('api.urls'))
 ]

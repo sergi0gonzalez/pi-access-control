@@ -86,7 +86,7 @@
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item active" href="/profile">Profile</a>
-              <a class="dropdown-item" href="/personnel">Personnel Area</a>
+              <a class="dropdown-item" href="/teacher_area">Teacher Area</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
             </div>
@@ -119,10 +119,7 @@
       <h2>Personal Info</h2>
       Email: {{ email }}
       <br/>
-      First Name: {{ first_name }}
-      <br/>
-      Last Name: {{ last_name }}
-
+      Full Name: {{ full_name }}
       <br/>
 
       <h3>Authentication Methods</h3>
@@ -154,8 +151,18 @@
                     <label for="exampleInputPassword2">Password</label>
                     <input name="audio_password" type="password" class="form-control" id="exampleInputPassword2" >
               </div>
+              {% ifequal cc False %}
+                  <div class="form-group">
+                      <input type="checkbox" name="cc" value="On"> Portuguese Citizens Card Authentication</br>
+                  </div>
+              {% else %}
+                  <div class="form-group">
+                      <input type="checkbox" name="cc" value="On" checked> Portuguese Citizens Card Authentication</br>
+                  </div>
+              {% endifequal %}
               <div class="form-group">
-                  <input type="checkbox" name="cc" value="On"> CC Authentication</br>
+                    <label for="exampleInputUsername2">ID number</label>
+                    <input name="id_number" type="text" class="form-control" id="exampleInputUsername2" >
               </div>
               <button type="submit" class=""><i style="margin-right: 8px" class=""></i>Save</button>
               <button type="reset" class=""><i style="margin-right: 8px" class=""></i>Cancel</button>

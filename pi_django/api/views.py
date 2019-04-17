@@ -6,12 +6,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
+from pi_django.models import Credential, UniversalUser, Permissions, Log
 from rest_framework.decorators import api_view
 from rest_framework.status import HTTP_200_OK
-
-from pi_django.models import Credential
-
 from tools.crypto import Asymmetric, Symmetric, HMAC
+from django.utils import timezone
 import base64
 import json
 import time
@@ -64,16 +63,26 @@ def check_audio_credential(request):
     if request.method == 'POST':
         msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
         msg = json.loads(msg)
-        user = User.objects.get(username=msg['identity'])
-        if Credential.objects.filter(user=user, associated_name='Audio').exists():
-            cred = Credential.objects.get(user=user, associated_name='Audio')
-            key = base64.b64decode(cred.data.encode())
-            totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
-            try:
-                totp.verify(msg['password'].encode(), time.time())
-            except InvalidToken:
-                return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
-            return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+        email = msg['identity']
+        user = None
+        if User.objects.filter(username=email).exists():
+            user = User.objects.get(username=email)
+        elif UniversalUser.objects.filter(e_mail=email).exists():
+            user = UniversalUser.objects.get(username=email)
+        # TODO: Permission validation (and perm.end_time > timezone.now())
+        perm = Permissions.objects.get(user=user)
+        if perm.state == True and perm.start_time < timezone.now():
+            if Credential.objects.filter(user=user, associated_name='Audio').exists():
+                cred = Credential.objects.get(user=user, associated_name='Audio')
+                key = base64.b64decode(cred.data.encode())
+                totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
+                try:
+                    totp.verify(msg['password'].encode(), time.time())
+                except InvalidToken:
+                    return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
+                log = Log(credential=cred, log_type='access', time_stamp=timezone.now())
+                log.save()
+                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
     else:
         return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
 

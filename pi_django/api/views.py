@@ -1,17 +1,21 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.twofactor.totp import TOTP, InvalidToken
 from cryptography.hazmat.primitives.hashes import SHA256
+from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from pi_django.models import Credential, UniversalUser, Permissions, Log
+from rest_framework.decorators import api_view
+from rest_framework.status import HTTP_200_OK
 from tools.crypto import Asymmetric, Symmetric, HMAC
 from django.utils import timezone
 import base64
 import json
 import time
 import os
-
+import logging
 
 RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
 RASP_ECCPUB_KEY = 'tools/rasp_ecc.pub'
@@ -23,6 +27,7 @@ __hmac_obj = HMAC()
 # TODO: load private keys, ask for password
 __rsa_priv = __asym_obj.load_private_key('tools/server_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('tools/server_ecc', 'qwerty')
+logger = logging.getLogger(__name__)
 
 
 def user_test(request):
@@ -80,6 +85,37 @@ def check_audio_credential(request):
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
     else:
         return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
+
+@csrf_exempt
+def mobile_login(request):
+
+    if "username" not in request.POST or "password" not in request.POST:
+        print("DENIED: us/ps not in form")
+        return JsonResponse({"status":"denied", "reason":"Username or password missing."})
+
+    username = request.POST["username"]
+    password = request.POST["password"]
+
+    user = authenticate(username=username, password=password)
+    if not user:
+        print("DENIED: invalid credentials")
+        return JsonResponse({"status": "denied", "reason": "Invalid Credentials."})
+    token, _ = Token.objects.get_or_create(user=user)
+    print("granted login")
+    return JsonResponse({"status":"granted","token": token.key})
+
+@csrf_exempt
+@api_view(["GET"])
+def mobile_get_names(request):
+    return JsonResponse({"first_name":request.user.first_name, "last_name": request.user.last_name})
+
+@csrf_exempt
+@api_view(["GET"])
+def mobile_get_email(request):
+    return JsonResponse({"email":request.user.username})
+
+
+
 
 
 def create_msg_to_send(data, public_key):

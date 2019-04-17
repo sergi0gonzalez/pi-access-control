@@ -127,7 +127,7 @@ def profile_page(request):
 
     return render(request, 'profile.html', tparams)
 
-
+  
 def mobile_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}

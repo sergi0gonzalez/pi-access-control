@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.hashes import SHA256
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from pi_django.models import Credential, Permissions, UniversalUser, Log
 from django.utils import timezone
@@ -10,6 +11,14 @@ import base64
 import re
 import os
 
+
+
+# idP Script
+from scripts.idpAuth import UniversityOauth
+
+'''
+idpConnection = UniversityOauth(CONSUMER_KEY, CONSUMER_SECRET, None, None)
+'''
 
 def main_page(request):
     logged_in = request.user.is_authenticated
@@ -192,3 +201,30 @@ def security_dashboard(request):
                         perm.save()
 
     return render(request, 'sec_dashboard.html', tparams)
+
+def idp_login(request):
+
+    auth_url = idpConnection.get_authorize_url()
+    print(auth_url)
+    return HttpResponseRedirect(auth_url)
+
+def idp_redirect(request):
+
+    oauth_verifier = request.GET['oauth_verifier']
+    #getTwitter.get_access_token_url(oauth_verifier)
+    print(oauth_verifier)
+
+    idpConnection.get_access_token_url(oauth_verifier)
+
+    return redirect('/')
+
+
+####################
+#   IDP API    #
+####################
+def get_ua_email(request):
+
+    idpConnection.get_email()
+
+    return redirect('/')
+

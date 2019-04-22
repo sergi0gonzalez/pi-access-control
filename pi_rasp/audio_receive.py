@@ -1,5 +1,5 @@
 from chirpsdk import ChirpConnect, CallbackSet
-from resources import send_audio_credential
+from resources import send_credential
 
 class Callbacks(CallbackSet):
 
@@ -9,7 +9,7 @@ class Callbacks(CallbackSet):
         else:
             payload = ''.join([chr(tmp) for tmp in payload])
             data = payload.split(':')
-            send_audio_credential(data[0], data[1])
+            send_credential(data[0], data[1])
 
 
 chirp = ChirpConnect()

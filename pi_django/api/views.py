@@ -75,6 +75,7 @@ def check_audio_credential(request):
             if Credential.objects.filter(user=user, associated_name='Audio').exists():
                 cred = Credential.objects.get(user=user, associated_name='Audio')
                 key = base64.b64decode(cred.data.encode())
+                # print(key)
                 totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
                 try:
                     totp.verify(msg['password'].encode(), time.time())
@@ -83,6 +84,9 @@ def check_audio_credential(request):
                 log = Log(credential=cred, log_type='access', time_stamp=timezone.now())
                 log.save()
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+        else:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
+
     else:
         return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
 

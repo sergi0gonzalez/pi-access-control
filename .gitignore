@@ -38,3 +38,6 @@ venv.bak/
 
 # other
 .DS_Store
+
+#PyCharm
+.idea/workspace.xml

@@ -3,7 +3,9 @@ from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from tools.crypto import Asymmetric, Symmetric, HMAC
+import RPi.GPIO as GPIO
 import requests
+import pyttsx3
 import json
 import time
 import sys
@@ -29,20 +31,43 @@ def get_nfc_challenge():
         return
     print(msg)
 
-def send_audio_credential(identity, otp):
-    #key = b'\xc9~I)\xef@\x1f\x16W\xd7\xe9)V\x01\x84d\x97\x9a\xe8K\xc2(\xb2\xac?c\xc5\xf1\x9c\xb0@\x12'
-    #totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
-    #totp_value = totp.generate(time.time())
+def send_credential(identity, otp):
     data = {'identity': identity, 'password': otp}
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
     response = requests.post('http://10.42.0.1:8080/api/audio_credential/', data=msg).json()
-    #print(response)
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
-    if 'error' in msg:
+    msg = json.loads(msg)
+    if 'error' in msg and msg['message'] == 'Authentication Failed!':
+        portic_signal(23, False)
+    elif 'error' in msg:
         print('Error(...)', msg)
+        portic_signal(24)
         return
-    print(msg)
+    elif 'ok' in msg:
+        print(msg)
+        portic_signal(18, True)
 
+
+def portic_signal(port, access=None):
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(port, GPIO.OUT)
+    GPIO.output(port, GPIO.HIGH)
+    if access != None:
+        if access:
+            text_to_speech('Welcome!')
+        else:
+            text_to_speech('Access denied!')
+    time.sleep(0.5)
+    GPIO.output(port, GPIO.LOW)
+
+
+def text_to_speech(text):
+    engine = pyttsx3.init()
+    engine.setProperty('voice', 'english+f4')
+    engine.say(text)
+    engine.runAndWait()
+    engine.stop()
 
 
 def create_msg_to_send(data, public_key):

@@ -16,15 +16,21 @@ import os
 # idP Script
 from scripts.idpAuth import UniversityOauth
 
-'''
-idpConnection = UniversityOauth(CONSUMER_KEY, CONSUMER_SECRET, None, None)
-'''
+#idpConnection = UniversityOauth(CONSUMER_KEY, CONSUMER_SECRET, None, None)
+
 
 def main_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
     if logged_in:
         tparams["username"] = request.user.username
+
+    '''
+    else:
+        if request.GET.items():
+            oauth_verifier = request.GET['oauth_verifier']
+    '''
+
 
     return render(request, 'index.html', tparams)
 
@@ -205,13 +211,17 @@ def security_dashboard(request):
 def idp_login(request):
 
     auth_url = idpConnection.get_authorize_url()
+
+    #just for console verification /TO DELETE/
     print(auth_url)
+
     return HttpResponseRedirect(auth_url)
 
 def idp_redirect(request):
 
     oauth_verifier = request.GET['oauth_verifier']
-    #getTwitter.get_access_token_url(oauth_verifier)
+    
+    #just for console verification /TO DELETE/
     print(oauth_verifier)
 
     idpConnection.get_access_token_url(oauth_verifier)

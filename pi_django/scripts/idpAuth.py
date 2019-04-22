@@ -16,6 +16,7 @@ REQUEST_TOKEN_URL = 'http://identity.ua.pt/oauth/request_token'
 ACCESS_TOKEN_URL = 'http://identity.ua.pt/oauth/access_token'
 AUTHORIZATION_URL = 'http://identity.ua.pt/oauth/authorize'
 GET_EMAIL_DATA_URL = 'http://identity.ua.pt/oauth/get_data?format=JSON&scope=uu'
+GET_NAME_DATA_URL = 'http://identity.ua.pt/oauth/get_data?format=JSON&scope=name'
 
 
 class UniversityOauth(object):
@@ -79,6 +80,7 @@ class UniversityOauth(object):
         Get access token from redirect url.
         Parameters:
             oauthVerifier: String
+            
         '''
 
         print("token inicial: " + self.oauth_token)
@@ -96,11 +98,21 @@ class UniversityOauth(object):
         print(self.oauth_token_secret)
     
 
+
+    #API CALLS
     def get_email(self):
 
-      oauth = OAuth1Session(self.consumer_key, self.consumer_secret, resource_owner_key= self.oauth_token, resource_owner_secret= self.oauth_token_secret)
-      r = oauth.get(GET_EMAIL_DATA_URL)
-      print(r.content)
+        oauth = OAuth1Session(self.consumer_key, self.consumer_secret, resource_owner_key= self.oauth_token, resource_owner_secret= self.oauth_token_secret)
+        r = oauth.get(GET_EMAIL_DATA_URL)
+        print(r.content)
+
+
+    def get_name(self):
+
+        oauth = OAuth1Session(self.consumer_key, self.consumer_secret, resource_owner_key = self.oauth_token, resource_owner_secret = self.oauth_token_secret)
+        r = oauth.get(GET_NAME_DATA_URL)
+        print(r.content)
+
 
 
 def generateSignature(parameters, link, method, consumer_secret):
@@ -145,6 +157,7 @@ def calculateSignature(signingKey, signatureBaseString):
     sig = binascii.b2a_base64(hashed.digest())[:-1]
         
     return percentEncode(sig)
+    
     '''
     
     raw = signatureBaseString.encode("utf-8")

@@ -4,7 +4,8 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from pi_django.models import Credential, Permissions, UniversalUser, Log
+from django.contrib.auth.decorators import login_required, user_passes_test
+from pi_django.models import Credential, Permissions, Log
 from django.utils import timezone
 import base64
 import re
@@ -15,7 +16,8 @@ def main_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
     if logged_in:
-        tparams["username"] = request.user.username
+        tparams['username'] = request.user.username
+        tparams['is_admin'] = request.user.is_superuser
 
     return render(request, 'index.html', tparams)
 
@@ -86,6 +88,7 @@ def logout_page(request):
     return redirect('/')
 
 
+@login_required
 def profile_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in, 'nfc': False, 'audio': False, 'cc': False}
@@ -127,7 +130,7 @@ def profile_page(request):
 
     return render(request, 'profile.html', tparams)
 
-  
+
 def mobile_page(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
@@ -137,21 +140,24 @@ def mobile_page(request):
     return render(request, 'mobile_app.html', tparams)
 
 
-def teacher_page(request):
+@login_required
+def students_perms(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
 
     if logged_in:
         tparams["username"] = request.user.username
-    return render(request, 'teacher_area.html', tparams)
+    return render(request, 'students_perms.html', tparams)
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def security_dashboard(request):
     logged_in = request.user.is_authenticated
     tparams = {'logged_in': logged_in}
 
     if logged_in:
-        tparams["username"] = request.user.username
+        tparams['username'] = request.user.username
         permissions = Permissions.objects.filter(state=False)
         tparams['permissions'] = permissions
         accesses = Permissions.objects.filter(state=True)
@@ -169,24 +175,11 @@ def security_dashboard(request):
                         perm.start_time = timezone.now()
                         perm.end_time = None
                         perm.save()
-                    elif UniversalUser.objects.filter(e_mail=email).exists():
-                        user = UniversalUser.objects.get(e_mail=email)
-                        perm = Permissions.objects.get(universal_user=user)
-                        perm.state = True
-                        perm.start_time = timezone.now()
-                        perm.end_time = None
-                        perm.save()
             if 'access' in request.POST:
                 for email in dict(request.POST)['access']:
                     if User.objects.filter(username=email).exists():
                         user = User.objects.get(username=email)
                         perm = Permissions.objects.get(user=user)
-                        perm.state = False
-                        perm.end_time = timezone.now()
-                        perm.save()
-                    elif UniversalUser.objects.filter(e_mail=email).exists():
-                        user = UniversalUser.objects.get(e_mail=email)
-                        perm = Permissions.objects.get(universal_user=user)
                         perm.state = False
                         perm.end_time = timezone.now()
                         perm.save()

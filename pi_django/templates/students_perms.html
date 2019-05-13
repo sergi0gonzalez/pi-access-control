@@ -45,7 +45,7 @@
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item" href="/students_perms">Students Permissions</a>
-              {% ifequal is_admin True %}
+              {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
               {% endifequal %}
@@ -54,7 +54,7 @@
         </ul>
           <ul class="nav navbar-nav">
               <div class="dropdown">
-                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ username }}</strong></a>
+                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ user.username }}</strong></a>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                       <a class="dropdown-item" href="/profile">Profile</a>
                       <div class="dropdown-divider"></div>

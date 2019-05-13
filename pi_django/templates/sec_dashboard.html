@@ -80,24 +80,22 @@
             <li class="nav-item">
             <a class="nav-link" href="/mobile_app">Mobile App</a>
           </li>
-          {% ifequal logged_in True %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Services
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item" href="/students_perms">Students Permissions</a>
-              {% ifequal is_admin True %}
+              {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
               {% endifequal %}
             </div>
           </li>
-          {% endifequal %}
         </ul>
           <ul class="nav navbar-nav">
               <div class="dropdown">
-                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ username }}</strong></a>
+                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ user.username }}</strong></a>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                       <a class="dropdown-item" href="/profile">Profile</a>
                       <div class="dropdown-divider"></div>
@@ -139,7 +137,7 @@
                                         <tr>
                                             <td>{{ perm.user.email }}</td>
                                             <td>{{ perm.user.last_name }}</td>
-                                            <td><input type="checkbox" name="perm" value="{{ perm.user.email }}"></td>
+                                            <td><input type="checkbox" name="grant" value="{{ perm.user.email }}"></td>
                                         </tr>
                                     {% endfor %}
                                     </tbody>
@@ -181,19 +179,11 @@
                                     </thead>
                                     <tbody>
                                     {% for access in accesses %}
-                                        {% ifequal access.user Null %}
-                                                <tr>
-                                                    <td>{{ access.universal_user.e_mail }}</td>
-                                                    <td>{{ access.universal_user.name }}</td>
-                                                    <td><input type="checkbox" name="access" value="{{ access.universal_user.e_mail }}"></td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td>{{ access.user.email }}</td>
-                                                    <td>{{ access.user.last_name }}</td>
-                                                    <td><input type="checkbox" name="access" value="{{ access.user.email }}"></td>
-                                                </tr>
-                                            {% endifequal %}
+                                        <tr>
+                                            <td>{{ access.user.email }}</td>
+                                            <td>{{ access.user.last_name }}</td>
+                                            <td><input type="checkbox" name="revoke" value="{{ access.user.email }}"></td>
+                                        </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>

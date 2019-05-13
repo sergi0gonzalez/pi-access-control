@@ -7,6 +7,7 @@ import time, collections, hmac, hashlib
 import codecs
 import json
 import os
+from urllib.parse import urlparse
 from hashlib import sha1
 from requests_oauthlib import OAuth1
 from requests_oauthlib import OAuth1Session
@@ -80,7 +81,6 @@ class UniversityOauth(object):
         Get access token from redirect url.
         Parameters:
             oauthVerifier: String
-            
         '''
 
         print("token inicial: " + self.oauth_token)
@@ -104,7 +104,11 @@ class UniversityOauth(object):
 
         oauth = OAuth1Session(self.consumer_key, self.consumer_secret, resource_owner_key= self.oauth_token, resource_owner_secret= self.oauth_token_secret)
         r = oauth.get(GET_EMAIL_DATA_URL)
-        print(r.content)
+        email = r.content.decode('utf-8')
+        json_acceptable_string = email.replace("'", "\"")
+        d = json.loads(json_acceptable_string)
+        self.email = d.get('email')
+        print(self.email)
 
 
     def get_name(self):

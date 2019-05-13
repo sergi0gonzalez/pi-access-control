@@ -16,7 +16,7 @@ import os
 # idP Script
 from scripts.idpAuth import UniversityOauth
 
-#idpConnection = UniversityOauth(CONSUMER_KEY, CONSUMER_SECRET, None, None)
+idpConnection = UniversityOauth('_428f4f4eaaa8d822d8f12693c714b1c57fb54cd9f2', '_3e2472fe6b54c1023aa754420693bc2584075a2274', None, None)
 
 
 def main_page(request):
@@ -24,13 +24,6 @@ def main_page(request):
     tparams = {'logged_in': logged_in}
     if logged_in:
         tparams["username"] = request.user.username
-
-    '''
-    else:
-        if request.GET.items():
-            oauth_verifier = request.GET['oauth_verifier']
-    '''
-
 
     return render(request, 'index.html', tparams)
 
@@ -220,6 +213,9 @@ def idp_login(request):
 def idp_redirect(request):
 
     oauth_verifier = request.GET['oauth_verifier']
+    idpConnection.get_access_token_url(oauth_verifier)
+      
+
     
     #just for console verification /TO DELETE/
     print(oauth_verifier)

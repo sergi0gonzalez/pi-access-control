@@ -38,13 +38,111 @@
           }
         }
     </script>
+    <script>
+      function toggleText() {
+        var text = document.getElementById("demo");
+        if (text.style.display === "none") {
+          text.style.display = "block";
+        } else {
+          text.style.display = "none";
+  }
+}
+    </script>
 
 </head>
+<style>
+
+
+
+
+.navbar-inner {
+    background:transparent;
+}
+
+.TextButton {
+background:none;
+border:none;
+margin:0;
+padding:0;
+color: white;
+
+height: 40px;
+}
+
+h1 { 
+  font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace; 
+  font-size: 37px; 
+  font-style: normal; 
+  font-variant: normal;
+  font-weight: bold; 
+  line-height: 50px;
+  color: white;
+  text-align: center;
+  }
+
+.bg-image {
+  
+
+  /* Add the blur effect */
+  filter: blur(8px);
+  -webkit-filter: blur(8px);
+
+  min-height: 100%;
+  min-width: 1024px;
+
+  width: 100%;
+  height: auto;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  z-index: -1;
+}
+
+.auth_text {
+
+  font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace; 
+  font-size: 15px; 
+  font-style: normal; 
+  font-variant: normal;
+  font-weight: bold; 
+  vertical-align: bottom;
+  color: white;
+  display: none;
+  }
+
+}
+
+/* Position text in the middle of the page/image */
+.bg-text {
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0, 0.4); /* Black w/opacity/see-through */
+  color: white;
+  font-weight: bold;
+  border: 3px solid #f1f1f1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 80%;
+  padding: 20px;
+  text-align: center;
+}
+
+.container-fluid { 
+
+  
+
+}
+
+</style>
 
 <body style="padding-bottom: 70px;">
 
   <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-inner fixed-top">
     <div class="container">
       <a class="navbar-brand" href="">IEETA Security</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,77 +192,26 @@
     </div>
   </nav>
 
-  <!-- Page Content -->
-  <div class="container">
+  <div class="container-fluid">
 
-    <!-- Heading Row -->
-    <div class="row align-items-center my-5">
-      <div class="col-lg-7">
-        <img class="img-fluid rounded mb-4 mb-lg-0" src="{% static "images/building.png" %}" style="height: 320px; width:700px;" alt="">
-      </div>
-      <!-- /.col-lg-8 -->
-      <div class="col-lg-5">
-        <h1 class="font-weight-light">Research Unit Access</h1>
-        <p>Sign In with your UA account to set up your prefered method of entrance authentication, consult your logs and request clearance.</p>
-      </div>
-      <!-- /.col-md-4 -->
-    </div>
-    <!-- /.row -->
-
-    <!-- Call to Action Well -->
-    <div class="card text-white bg-secondary my-5 py-4 text-center">
-      <div class="card-body">
-        <p class="text-white m-0">This call to action card is a great place to showcase some important information or display a clever tagline!</p>
-      </div>
-    </div>
-
-    <!-- Content Row -->
-    <div class="row">
-      <div class="col-md-4 mb-5">
-        <div class="card h-100">
-          <div class="card-body">
-            <h2 class="card-title">Authentication</h2>
-            <p class="card-text">There's a diversity of authentication methods available for you, ranging from QR codes to citizen cards and more. You are free to choose whichever you prefer!</p>
-          </div>
-          <div class="card-footer">
-            <a href="#" class="btn btn-primary btn-sm">More Info</a>
-          </div>
-        </div>
-      </div>
-      <!-- /.col-md-4 -->
-      <div class="col-md-4 mb-5">
-        <div class="card h-100">
-          <div class="card-body">
-            <h2 class="card-title">Access Clearance</h2>
-            <p class="card-text">Request and stay up to date of your access permissions. Look through logs of your entrances of exits to ensure there's nothing wrong.</p>
-          </div>
-          <div class="card-footer">
-            <a href="#" class="btn btn-primary btn-sm">More Info</a>
-          </div>
-        </div>
-      </div>
-      <!-- /.col-md-4 -->
-      <div class="col-md-4 mb-5">
-        <div class="card h-100">
-          <div class="card-body">
-            <h2 class="card-title">Mobile App</h2>
-            <p class="card-text">Install our free android app to be able to use phone-based authentication methods, and use our other services on the go!</p>
-          </div>
-          <div class="card-footer">
-            <a href="#" class="btn btn-primary btn-sm">More Info</a>
-          </div>
-        </div>
-      </div>
-      <!-- /.col-md-4 -->
-
-    </div>
-    <!-- /.row -->
+      <p id='demo' class="bg-text">Authentication</p>     
+      <h1><button class='TextButton' type='button' onclick="toggleText()">Security App</button></h1>
 
   </div>
+
+  <!-- Page Content -->
+  <img class="bg-image" src="{% static "images/handy.jpeg" %}">
+
+
+
+  
+   
+    
+   
   <!-- /.container -->
 
   <!-- Footer -->
-  <footer class="bg-dark navbar fixed-bottom">
+  <footer class="navbar-inner navbar fixed-bottom">
     <div class="container">
       <p class="m-0 text-center text-white">Copyright &copy; Your Website 2019</p>
     </div>

@@ -90,22 +90,21 @@ def logout_page(request):
 
 @login_required
 def profile_page(request):
-    logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in, 'nfc': False, 'audio': False, 'cc': False}
+    tparams = {'nfc': False, 'audio': False, 'cc': False}
 
-    if logged_in:
-        tparams["username"] = request.user.username
-        user = User.objects.get(username=request.user.username)
-        tparams['email'] = user.email
-        tparams['full_name'] = user.last_name
-        if Credential.objects.filter(user=user).exists():
-            for cred in Credential.objects.filter(user=user):
-                if cred.associated_name == 'NFC':
-                    tparams['nfc'] = True
-                if cred.associated_name == 'Audio':
-                    tparams['audio'] = True
-                if cred.associated_name == 'CitizensCard':
-                    tparams['cc'] = True
+    tparams['username'] = request.user.username
+    tparams['is_admin'] = request.user.is_superuser
+    user = User.objects.get(username=request.user.username)
+    tparams['email'] = user.email
+    tparams['full_name'] = user.last_name
+    if Credential.objects.filter(user=user).exists():
+        for cred in Credential.objects.filter(user=user):
+            if cred.associated_name == 'NFC':
+                tparams['nfc'] = True
+            if cred.associated_name == 'Audio':
+                tparams['audio'] = True
+            if cred.associated_name == 'CitizensCard':
+                tparams['cc'] = True
 
     if request.method == 'POST':
         user = User.objects.get(username=request.user.username)
@@ -136,52 +135,51 @@ def mobile_page(request):
     tparams = {'logged_in': logged_in}
 
     if logged_in:
-        tparams["username"] = request.user.username
+        tparams['username'] = request.user.username
+        tparams['is_admin'] = request.user.is_superuser
     return render(request, 'mobile_app.html', tparams)
 
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def students_perms(request):
-    logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in}
-
-    if logged_in:
-        tparams["username"] = request.user.username
+    tparams = {'username': request.user.username, 'is_admin': request.user.is_superuser}
     return render(request, 'students_perms.html', tparams)
 
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def security_dashboard(request):
-    logged_in = request.user.is_authenticated
-    tparams = {'logged_in': logged_in}
+    tparams = {}
+    tparams['username'] = request.user.username
+    permissions = Permissions.objects.filter(state=False)
+    tparams['permissions'] = permissions
+    accesses = Permissions.objects.filter(state=True)
+    tparams['accesses'] = accesses
+    logs = Log.objects.all().order_by('time_stamp').reverse()
+    tparams['logs'] = logs
 
-    if logged_in:
-        tparams['username'] = request.user.username
-        permissions = Permissions.objects.filter(state=False)
-        tparams['permissions'] = permissions
-        accesses = Permissions.objects.filter(state=True)
-        tparams['accesses'] = accesses
-        logs = Log.objects.all().order_by('time_stamp').reverse()
-        tparams['logs'] = logs
-
-        if request.method == 'POST':
-            if 'perm' in request.POST:
-                for email in dict(request.POST)['perm']:
-                    if User.objects.filter(username=email).exists():
-                        user = User.objects.get(username=email)
-                        perm = Permissions.objects.get(user=user)
-                        perm.state = True
-                        perm.start_time = timezone.now()
-                        perm.end_time = None
-                        perm.save()
-            if 'access' in request.POST:
-                for email in dict(request.POST)['access']:
-                    if User.objects.filter(username=email).exists():
-                        user = User.objects.get(username=email)
-                        perm = Permissions.objects.get(user=user)
-                        perm.state = False
-                        perm.end_time = timezone.now()
-                        perm.save()
+    if request.method == 'POST':
+        if 'perm' in request.POST:
+            for email in dict(request.POST)['perm']:
+                if User.objects.filter(username=email).exists():
+                    user = User.objects.get(username=email)
+                    user.is_staff = True
+                    user.save()
+                    perm = Permissions.objects.get(user=user)
+                    perm.state = True
+                    perm.start_time = timezone.now()
+                    perm.end_time = None
+                    perm.save()
+        if 'access' in request.POST:
+            for email in dict(request.POST)['access']:
+                if User.objects.filter(username=email).exists():
+                    user = User.objects.get(username=email)
+                    user.is_staff = False
+                    user.save()
+                    perm = Permissions.objects.get(user=user)
+                    perm.state = False
+                    perm.end_time = timezone.now()
+                    perm.save()
 
     return render(request, 'sec_dashboard.html', tparams)

@@ -39,7 +39,6 @@
             <li class="nav-item">
             <a class="nav-link" href="/mobile_app">Mobile App</a>
           </li>
-          {% ifequal logged_in True %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Services
@@ -52,10 +51,8 @@
               {% endifequal %}
             </div>
           </li>
-          {% endifequal %}
         </ul>
           <ul class="nav navbar-nav">
-              {% ifequal logged_in True %}
               <div class="dropdown">
                 <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ username }}</strong></a>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
@@ -64,13 +61,6 @@
                       <a class="dropdown-item" href="/logout" type="submit">Log Out</a>
                   </div>
               </div>
-
-              {% else %}
-
-              <a class="btn btn-success" href="/login" style="margin-left: 8px;"><i style="margin-right: 8px" class="fas fa-sign-in-alt"></i> Sign In </a>
-              <a class="btn btn-success" href="/register" style="margin-left: 8px;"><i style="margin-right: 8px" class="fas fa-sign-in-alt"></i> Sign Up </a>
-
-              {% endifequal %}
           </ul>
       </div>
     </div>

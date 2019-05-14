@@ -73,8 +73,9 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home
+            </a>
           </li>
             <li class="nav-item">
             <a class="nav-link" href="/mobile_app">Mobile App</a>
@@ -84,34 +85,29 @@
                 Services
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item active" href="/profile">Profile</a>
-              <a class="dropdown-item" href="/teacher_area">Teacher Area</a>
+              <a class="dropdown-item" href="/students_perms">Students Permissions</a>
+              {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/last_access">Last User Access</a>
+              {% endifequal %}
             </div>
           </li>
         </ul>
           <ul class="nav navbar-nav">
-
-              {% ifequal logged_in True %}
-
               <div class="dropdown">
-                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ username }}</strong></a>
+                <a class="nav-link dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Logged in as <strong>{{ user.username }}</strong></a>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <a class="dropdown-item" href="/logout" type="submit">Log Out</a>
+                      <a class="dropdown-item" href="/profile">Profile</a>
+                      <div class="dropdown-divider"></div>
+                      <a class="dropdown-item" href="/logout" type="submit">Log Out</a>
                   </div>
               </div>
-
-              {% else %}
-
-              <a class="btn btn-success" href="/login" style="margin-left: 8px;"><i style="margin-right: 8px" class="fas fa-sign-in-alt"></i> Sign In </a>
-
-              {% endifequal %}
           </ul>
       </div>
     </div>
   </nav>
-
 
   <!-- Page Content -->
   <div class="container" style="margin-top:20px; margin-bottom:20px;">
@@ -140,19 +136,11 @@
                                     </thead>
                                     <tbody>
                                     {% for perm in permissions %}
-                                        {% ifequal perm.user Null %}
-                                                <tr>
-                                                    <td>{{ perm.universal_user.e_mail }}</td>
-                                                    <td>{{ perm.universal_user.name }}</td>
-                                                    <td><input type="checkbox" name="perm" value="{{ perm.universal_user.e_mail }}"></td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td>{{ perm.user.email }}</td>
-                                                    <td>{{ perm.user.last_name }}</td>
-                                                    <td><input type="checkbox" name="perm" value="{{ perm.user.email }}"></td>
-                                                </tr>
-                                            {% endifequal %}
+                                        <tr>
+                                            <td>{{ perm.user.email }}</td>
+                                            <td>{{ perm.user.last_name }}</td>
+                                            <td><input type="checkbox" name="grant" value="{{ perm.user.email }}"></td>
+                                        </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>
@@ -171,19 +159,11 @@
                                     </thead>
                                     <tbody>
                                         {% for log in logs %}
-                                            {% ifequal log.user Null %}
-                                                <tr>
-                                                    <td>{{ log.credential.universal_user.e_mail }}</td>
-                                                    <td>{{ log.credential.universal_user.name }}</td>
-                                                    <td>{{ log.time_stamp }}</td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td>{{ log.credential.user.email }}</td>
-                                                    <td>{{ log.credential.user.last_name }}</td>
-                                                    <td>{{ log.time_stamp }}</td>
-                                                </tr>
-                                            {% endifequal %}
+                                            <tr>
+                                                <td>{{ log }}</td>
+                                                <td>{{ log }}</td>
+                                                <td>{{ log.time_stamp }}</td>
+                                            </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>
@@ -201,19 +181,11 @@
                                     </thead>
                                     <tbody>
                                     {% for access in accesses %}
-                                        {% ifequal access.user Null %}
-                                                <tr>
-                                                    <td>{{ access.universal_user.e_mail }}</td>
-                                                    <td>{{ access.universal_user.name }}</td>
-                                                    <td><input type="checkbox" name="access" value="{{ access.universal_user.e_mail }}"></td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                    <td>{{ access.user.email }}</td>
-                                                    <td>{{ access.user.last_name }}</td>
-                                                    <td><input type="checkbox" name="access" value="{{ access.user.email }}"></td>
-                                                </tr>
-                                            {% endifequal %}
+                                        <tr>
+                                            <td>{{ access.user.email }}</td>
+                                            <td>{{ access.user.last_name }}</td>
+                                            <td><input type="checkbox" name="revoke" value="{{ access.user.email }}"></td>
+                                        </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>

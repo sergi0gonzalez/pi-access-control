@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from pi_django import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +28,7 @@ urlpatterns = [
     path('logout/', views.logout_page),
     path('sec_dashboard/', views.security_dashboard),
     path('mobile_app/', views.mobile_page),
-    path('teacher_area/', views.teacher_page),
+    path('students_perms/', views.students_perms),
+    path('last_access/', views.last_access),
     path('api/', include('api.urls'))
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

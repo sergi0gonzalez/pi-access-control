@@ -6,15 +6,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
-from pi_django.models import Credential, UniversalUser, Permissions, Log
+from pi_django.models import Credential, Permission, Log
 from rest_framework.decorators import api_view
-from rest_framework.status import HTTP_200_OK
 from tools.crypto import Asymmetric, Symmetric, HMAC
 from django.utils import timezone
-import base64
 import json
 import time
-import os
 import logging
 
 RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
@@ -30,36 +27,8 @@ __ecc_priv = __asym_obj.load_private_key('tools/server_ecc', 'qwerty')
 logger = logging.getLogger(__name__)
 
 
-def user_test(request):
-    print(User.objects.all())
-    return JsonResponse({'status': 'OK'})
-
-
-def api_test(request):
-    print(request.method)
-    if request.method == 'POST':
-        return JsonResponse({'status': 'POST'})
-    if request.method == 'GET':
-        return JsonResponse({'status': 'GET'})
-
-
-def nfc_challenge(request):
-    if request.method == 'GET':
-        data = {'nonce': base64.b64encode(os.urandom(32)).decode()}
-        print(data)
-        msg = create_msg_to_send(data, RASP_RSAPUB_KEY)
-        return JsonResponse(msg)
-    else:
-        msg = create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY)
-        return JsonResponse(msg)
-
-
-def nfc_response(request):
-    return JsonResponse({'status': 'OK'})
-
-
 @csrf_exempt
-def check_audio_credential(request):
+def check_credential(request):
     if request.method == 'POST':
         msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
         msg = json.loads(msg)
@@ -67,22 +36,24 @@ def check_audio_credential(request):
         user = None
         if User.objects.filter(username=email).exists():
             user = User.objects.get(username=email)
-        elif UniversalUser.objects.filter(e_mail=email).exists():
-            user = UniversalUser.objects.get(username=email)
         # TODO: Permission validation (and perm.end_time > timezone.now())
-        perm = Permissions.objects.get(user=user)
-        if perm.state == True and perm.start_time < timezone.now():
-            if Credential.objects.filter(user=user, associated_name='Audio').exists():
-                cred = Credential.objects.get(user=user, associated_name='Audio')
-                key = base64.b64decode(cred.data.encode())
-                # print(key)
+        perm = Permission.objects.get(user=user)
+        if perm.state and perm.start_time < timezone.now():
+            credential = Credential.objects.get(user=user)
+            if credential is not None and credential.status == 'valid':
+                key = bytes.fromhex(credential.data)
                 totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
                 try:
                     totp.verify(msg['password'].encode(), time.time())
                 except InvalidToken:
                     return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
-                log = Log(credential=cred, log_type='access', time_stamp=timezone.now())
-                log.save()
+                logs = Log.objects.get(user=user).all().order_by('time_stamp').reverse()
+                if logs[0].log_type == 'leave':
+                    log = Log(user=user, log_type='entry', time_stamp=timezone.now())
+                    log.save()
+                else:
+                    log = Log(user=user, log_type='leave', time_stamp=timezone.now())
+                    log.save()
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
@@ -90,12 +61,12 @@ def check_audio_credential(request):
     else:
         return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
 
+
 @csrf_exempt
 def mobile_login(request):
-
     if "username" not in request.POST or "password" not in request.POST:
         print("DENIED: us/ps not in form")
-        return JsonResponse({"status":"denied", "reason":"Username or password missing."})
+        return JsonResponse({"status": "denied", "reason": "Username or password missing."})
 
     username = request.POST["username"]
     password = request.POST["password"]
@@ -106,20 +77,26 @@ def mobile_login(request):
         return JsonResponse({"status": "denied", "reason": "Invalid Credentials."})
     token, _ = Token.objects.get_or_create(user=user)
     print("granted login")
-    return JsonResponse({"status":"granted","token": token.key})
+    return JsonResponse({"status": "granted", "token": token.key})
+
 
 @csrf_exempt
 @api_view(["GET"])
 def mobile_get_names(request):
-    return JsonResponse({"first_name":request.user.first_name, "last_name": request.user.last_name})
+    return JsonResponse({"first_name": request.user.first_name, "last_name": request.user.last_name})
+
 
 @csrf_exempt
 @api_view(["GET"])
 def mobile_get_email(request):
-    return JsonResponse({"email":request.user.username})
+    return JsonResponse({"email": request.user.username})
 
 
-
+@csrf_exempt
+@api_view(["GET"])
+def mobile_get_credential(request):
+    cred = Credential.objects.get(user=request.user)
+    return JsonResponse({"credential": cred.data})
 
 
 def create_msg_to_send(data, public_key):

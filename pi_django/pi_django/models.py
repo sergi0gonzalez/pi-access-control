@@ -37,4 +37,4 @@ class Credential(models.Model):
 class Log(models.Model):
     log_type = models.CharField(max_length=10)
     time_stamp = models.DateTimeField()
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

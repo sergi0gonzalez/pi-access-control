@@ -84,26 +84,32 @@ def logout_page(request):
 
 @login_required
 def profile_page(request):
-    tparams = {'perm': Permission.objects.get(user=request.user).state, 'active_tab': False, 'error': False}
+    tparams = {'perm': True, 'active_tab': False, 'error': False}
 
+    if Permission.objects.filter(user=request.user).exists():
+        tparams['perm'] = Permission.objects.get(user=request.user).state
     if request.method == 'POST':
-        tparams['active_tab'] = True
-        user_auth = authenticate(username=request.user.username, password=request.POST['password'])
-        if user_auth is not None and request.POST['new_password'] == request.POST['new_confpassword']:
-            request.user.set_password(request.POST['new_confpassword'])
-            request.user.save()
-        elif user_auth is None and request.POST['password'] != '':
-            tparams['change_error'] = True
-            tparams['change_error_reason'] = 'Wrong password!'
-            return render(request, 'profile.html', tparams)
-        elif request.POST['new_password'] != request.POST['new_confpassword']:
-            tparams['change_error'] = True
-            tparams['change_error_reason'] = 'Passwords don\'t match!'
-            return render(request, 'profile.html', tparams)
+        if 'btnChange' in request.POST:
+            tparams['active_tab'] = True
+            user_auth = authenticate(username=request.user.username, password=request.POST['password'])
+            if user_auth is not None and request.POST['new_password'] == request.POST['new_confpassword']:
+                request.user.set_password(request.POST['new_confpassword'])
+                request.user.save()
+            elif user_auth is None and request.POST['password'] != '':
+                tparams['change_error'] = True
+                tparams['change_error_reason'] = 'Wrong password!'
+                return render(request, 'profile.html', tparams)
+            elif request.POST['new_password'] != request.POST['new_confpassword']:
+                tparams['change_error'] = True
+                tparams['change_error_reason'] = 'Passwords don\'t match!'
+                return render(request, 'profile.html', tparams)
+            else:
+                tparams['change_error'] = True
+                tparams['change_error_reason'] = 'No password!'
+                return render(request, 'profile.html', tparams)
         else:
-            tparams['change_error'] = True
-            tparams['change_error_reason'] = 'No password!'
-            return render(request, 'profile.html', tparams)
+            request.user.profile.photo = request.FILES['photo']
+            request.user.profile.save()
 
     return render(request, 'profile.html', tparams)
 
@@ -155,3 +161,10 @@ def security_dashboard(request):
                     perm.save()
 
     return render(request, 'sec_dashboard.html', tparams)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def last_access(request):
+    tparams = {}
+    return render(request, 'last_access.html', tparams)

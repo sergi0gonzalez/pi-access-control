@@ -181,6 +181,14 @@
             <li class="nav-item">
             <a class="nav-link" href="/mobile_app">Mobile App</a>
           </li>
+            {% ifequal user.is_superuser True %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">User Registration</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/last_access">Last Access</a>
+                </li>
+            {% endifequal %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Services
@@ -190,8 +198,6 @@
               {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/last_access">Last User Access</a>
               {% endifequal %}
             </div>
           </li>

@@ -37,24 +37,24 @@
             </a>
           </li>
             <li class="nav-item">
-            <a class="nav-link" href=".">Mobile App</a>
-          </li>
-          {% ifequal user.is_authenticated True %}
+                <a class="nav-link" href=".">Mobile App</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/register">User Registration</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/last_access">Last Access</a>
+            </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Services
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item" href="/students_perms">Students Permissions</a>
-              {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/last_access">Last User Access</a>
-              {% endifequal %}
             </div>
           </li>
-          {% endifequal %}
         </ul>
           <ul class="nav navbar-nav">
               <div class="dropdown">

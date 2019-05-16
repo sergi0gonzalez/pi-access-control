@@ -33,6 +33,8 @@ def login_page(request):
         return render(request, 'login.html', tparams)
 
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def register_page(request):
     tparams = {}
 
@@ -71,8 +73,6 @@ def register_page(request):
             cred = Credential(status="valid", user=user, data=secret)
             cred.save()
             return redirect('/')
-    elif request.user.is_authenticated:
-        return redirect('/')
     else:
         return render(request, 'register.html', tparams)
 

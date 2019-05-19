@@ -81,8 +81,8 @@
                     <input name="signup_email" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
                   </div>
                 <div class="form-group">
-                    <label for="exampleInputUsername2">Full Name</label>
-                    <input name="signup_full_name" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
+                    <label for="value">Full Name</label>
+                    <input name="signup_full_name" type="text" class="form-control" id="value" aria-describedby="usernameHelp">
                 </div>
                   <div class="form-group">
                     <label for="exampleInputPassword2">Password</label>
@@ -99,7 +99,17 @@
                     {% endifequal %}
               <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
           </form>
+
+          <center>
+            <h1>Status: <span id="status">Disconnected</span></h1>
+        
+            <form id="connect_form">
+              <button type="submit"></i> Allow Citizen Card Assisted Registration</button>
+            </form>
+          </center>
   </div>
+
+  
   <!-- /.container -->
 
   <!-- Footer -->
@@ -111,6 +121,54 @@
   </footer>
 
   <!-- Bootstrap core JavaScript -->
+
+<script>
+            const createSocket = (clientId) => {
+                const socket = new WebSocket("ws://localhost:8000/ws");
+                
+                socket.onopen = (event) => {
+                    socket.send(JSON.stringify({
+                        event: 'authentication',
+                        client_id: 'client',
+                        client_mode: 'web',
+                    }))
+                    document.getElementById('status').textContent = `Connected`
+                    document.getElementById('client_id').textContent = 'client'
+                }
+                socket.onmessage = (event) => {
+                    const message = JSON.parse(event.data)
+                      document.getElementById('value').value = message
+                }
+                window.addEventListener('unload', (event) => socket.close())
+                return socket
+            }
+            const disconnectSocket = (socket) => {
+                socket.close()
+                document.getElementById('status').textContent = `Disconnected`
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                let socket
+                const form = document.getElementById('connect_form')
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault()
+                    if (socket) {
+                        disconnectSocket(socket)
+                    }
+                    socket = createSocket('client')
+                })
+
+                const disconnectButton = document.getElementById('disconnect_button')
+                disconnectButton.addEventListener('click', () => disconnectSocket(socket))
+                
+                const beepButton = document.getElementById('beep_button')
+                beepButton.addEventListener('click', () => socket.send(JSON.stringify({ event: 'beep' })))
+
+
+            })
+
+  </script>
+
   <script src="{% static "vendor/jquery/jquery.min.js" %}"></script>
   <script src="{% static "vendor/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 

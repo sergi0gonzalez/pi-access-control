@@ -157,17 +157,17 @@
                                  <table class="table" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>E-mail</th>
                                             <th>Name</th>
                                             <th>Time</th>
+                                            <th>Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for log in logs %}
                                             <tr>
-                                                <td>{{ log }}</td>
-                                                <td>{{ log }}</td>
+                                                <td>{{ log.user.last_name }}</td>
                                                 <td>{{ log.time_stamp }}</td>
+                                                <td>{{ log.log_type }}</td>
                                             </tr>
                                     {% endfor %}
                                     </tbody>

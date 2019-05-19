@@ -13,6 +13,8 @@ import sys
 
 SERVER_RSAPUB_KEY = 'server_rsa.pub'
 SERVER_SIGNPUB_KEY = 'server_ecc.pub'
+#server_url = 'http://192.168.160.104:8080/api/'
+server_url = 'http://10.42.0.1:8080/api/'
 
 __asym_obj = Asymmetric()
 __sym_obj = Symmetric()
@@ -22,22 +24,31 @@ __rsa_priv = __asym_obj.load_private_key('rasp_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('rasp_ecc', 'qwerty')
 
 
-def get_nfc_challenge():
-    response = requests.get('http://10.42.0.1:8080/api/nfc_challenge').json()
-    print(response)
-    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
-    if 'error' in msg:
-        print('Error(...)', msg)
-        return
-    print(msg)
-
-def send_credential(identity, otp):
+def send_audio_credential(identity, otp):
     data = {'identity': identity, 'password': otp}
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
-    response = requests.post('http://10.42.0.1:8080/api/audio_credential/', data=msg).json()
+    response = requests.post(server_url+'check_audio_credential/', data=msg).json()
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     msg = json.loads(msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
+        portic_signal(23, False)
+    elif 'error' in msg:
+        print('Error(...)', msg)
+        portic_signal(24)
+        return
+    elif 'ok' in msg:
+        print(msg)
+        portic_signal(18, True)
+
+
+def send_qrcode_credential(identity, otp):
+    data = {'identity': identity, 'password': otp}
+    msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
+    response = requests.post(server_url+'check_qrcode_credential/', data=msg).json()
+    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
+    print('Msg -->'+msg)
+    msg = json.loads(msg)
+    if 'error' in msg and msg['message'] == "Authentication Failed!":
         portic_signal(23, False)
     elif 'error' in msg:
         print('Error(...)', msg)

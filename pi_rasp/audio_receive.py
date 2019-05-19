@@ -9,7 +9,7 @@ class Callbacks(CallbackSet):
         else:
             payload = ''.join([chr(tmp) for tmp in payload])
             data = payload.split(':')
-            send_credential(data[0], data[1])
+            send_audio_credential(data[0], data[1])
 
 
 chirp = ChirpConnect()

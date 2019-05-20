@@ -13,6 +13,8 @@ from django.utils import timezone
 import json
 import time
 import logging
+import asyncio
+import websockets
 
 RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
 RASP_ECCPUB_KEY = 'tools/rasp_ecc.pub'
@@ -55,12 +57,16 @@ def check_audio_credential(request):
                     if logs[0].log_type == 'leave':
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
+                        last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                        asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
                         log.save()
                 else:
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
+                    last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
@@ -96,12 +102,16 @@ def check_qrcode_credential(request):
                     if logs[0].log_type == 'leave':
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
+                        last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                        asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
                         log.save()
                 else:
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
+                    last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
@@ -144,6 +154,11 @@ def mobile_get_email(request):
 def mobile_get_credential(request):
     cred = Credential.objects.get(user=request.user)
     return JsonResponse({"credential": cred.data})
+
+
+async def send_last_access(msg):
+    async with websockets.connect('ws://localhost:8765') as websocket:
+        await websocket.send(msg)
 
 
 def create_msg_to_send(data, public_key):

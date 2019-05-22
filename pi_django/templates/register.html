@@ -83,6 +83,8 @@
                 <div class="form-group">
                     <label for="value">Full Name</label>
                     <input name="signup_full_name" type="text" class="form-control" id="value" aria-describedby="usernameHelp">
+                    <input name="signup_cc" type="hidden" class="form-control" id="cc">
+
                 </div>
                   <div class="form-group">
                     <label for="exampleInputPassword2">Password</label>
@@ -104,7 +106,7 @@
             <h1>Status: <span id="status">Disconnected</span></h1>
         
             <form id="connect_form">
-              <button type="submit"></i> Allow Citizen Card Assisted Registration</button>
+              <button type="submit"></i>Associar Cartão Cidadão</button>
             </form>
           </center>
   </div>
@@ -137,7 +139,11 @@
                 }
                 socket.onmessage = (event) => {
                     const message = JSON.parse(event.data)
-                      document.getElementById('value').value = message
+                    var fields = message.split('+')
+                    var name = fields[0]
+                    var number = fields[1]
+                      document.getElementById('value').value = name
+                      document.getElementById('cc').value = number
                 }
                 window.addEventListener('unload', (event) => socket.close())
                 return socket

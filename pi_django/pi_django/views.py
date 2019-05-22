@@ -72,6 +72,9 @@ def register_page(request):
             secret = os.urandom(20).hex()
             cred = Credential(status="valid", user=user, data=secret)
             cred.save()
+            user.profile.id_number = request.POST['signup_cc']
+            print(request.POST['signup_cc'])
+            request.user.profile.save()
             return redirect('/')
     else:
         return render(request, 'register.html', tparams)

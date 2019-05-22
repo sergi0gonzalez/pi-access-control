@@ -36,6 +36,7 @@ async def websocket_endpoint(websocket):
     client_string = f'{client_id}[{client_mode}]'
     logger.info(f'Client connected: {client_string}')
 
+
     while (True):
         try:
             # Wait for a message from the client

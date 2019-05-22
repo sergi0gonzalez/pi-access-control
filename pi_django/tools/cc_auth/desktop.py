@@ -25,10 +25,12 @@ def json_to_payload(message):
 
 async def send_cc_data(websocket):
     while (True):
-        await asyncio.sleep(1)
-        message = citizen_card.get_user_name()
+        await asyncio.sleep(2)
+        cc_name = citizen_card.get_user_name()
+        cc_number = citizen_card.get_cc_number()
+        message = cc_name + '+' + cc_number
         await websocket.send(json_to_payload(message))
-        logger.debug(f'Sent message to server: {message}')
+        logger.debug(f'Sent cc name to server: {message}')
 
 
 async def consumer(message):

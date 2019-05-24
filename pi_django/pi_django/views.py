@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from pi_django.models import Credential, Permission, Log
+from pi_django.models import Credential, Permission, Log, Method
 from django.utils import timezone
 import re
 import os
@@ -129,13 +129,14 @@ def students_perms(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def security_dashboard(request):
-    tparams = {}
+    tparams = {'revoke_tab': False, 'method_tab': False}
     permissions = Permission.objects.filter(state=False)
     tparams['permissions'] = permissions
     accesses = Permission.objects.filter(state=True)
     tparams['accesses'] = accesses
     logs = Log.objects.all().order_by('time_stamp').reverse()
     tparams['logs'] = logs
+    tparams['methods'] = Method.objects.all()
 
     if request.method == 'POST':
         if 'grant' in request.POST:
@@ -150,6 +151,7 @@ def security_dashboard(request):
                     perm.end_time = None
                     perm.save()
         if 'revoke' in request.POST:
+            tparams['revoke_tab'] = True
             for email in dict(request.POST)['revoke']:
                 if User.objects.filter(username=email).exists():
                     user = User.objects.get(username=email)
@@ -159,6 +161,15 @@ def security_dashboard(request):
                     perm.state = False
                     perm.end_time = timezone.now()
                     perm.save()
+        if 'method' in request.POST:
+            tparams['method_tab'] = True
+            for name in dict(request.POST)['method']:
+                method = Method.objects.get(name=name)
+                if method.status:
+                    method.status = False
+                else:
+                    method.status = True
+                method.save()
 
     return render(request, 'sec_dashboard.html', tparams)
 

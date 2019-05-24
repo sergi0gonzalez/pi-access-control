@@ -25,13 +25,18 @@ class Permission(models.Model):
     state = models.BooleanField(default=False)
     start_time = models.DateTimeField(blank=True, null=True)
     end_time = models.DateTimeField(blank=True, null=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
 class Credential(models.Model):
     status = models.CharField(max_length=70)
     data = models.TextField()
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+
+
+class Method(models.Model):
+    name = models.CharField(max_length=20, primary_key=True)
+    status = models.BooleanField(default=False)
 
 
 class Log(models.Model):

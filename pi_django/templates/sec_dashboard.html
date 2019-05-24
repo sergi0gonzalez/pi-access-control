@@ -94,10 +94,8 @@
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               <a class="dropdown-item" href="/students_perms">Students Permissions</a>
-              {% ifequal user.is_superuser True %}
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="/sec_dashboard">Security Dashboard</a>
-              {% endifequal %}
             </div>
           </li>
         </ul>
@@ -123,80 +121,111 @@
                     <div class="col-md-12">
                         <nav>
                             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-permissions" role="tab" aria-controls="nav-home" aria-selected="true"><i style="margin-right: 8px" class="fas fa-id-card"></i>Permissions</a>
-                                <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false"><i style="margin-right: 8px" class="far fa-calendar-check"></i>Access Clearance</a>
+                                <a class="nav-item nav-link {% if revoke_tab == False and method_tab == False %} active{% endif %}" id="nav-home-tab" data-toggle="tab" href="#nav-permissions" role="tab" aria-controls="nav-home" aria-selected="true"><i style="margin-right: 8px" class="fas fa-id-card"></i>Permissions</a>
+                                <a class="nav-item nav-link {% ifequal revoke_tab True %} active{% endifequal %}" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false"><i style="margin-right: 8px" class="far fa-calendar-check"></i>Access Clearance</a>
                                 <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false"><i style="margin-right: 8px" class="fas fa-list"></i>Entrance Logs</a>
+                                <a class="nav-item nav-link {% ifequal method_tab True %} active{% endifequal %}" id="nav-profile-tab" data-toggle="tab" href="#nav-manage" role="tab" aria-controls="nav-profile" aria-selected="false"><i style="margin-right: 8px" class="fas fa-cogs"></i>Manage Methods</a>
                             </div>
                         </nav>
                         <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-permissions" role="tabpanel" aria-labelledby="nav-home-tab">
-                            <form action="." name="permissionForm" method="post">
-                                {% csrf_token %}
-                                 <table class="table" cellspacing="0">
-                                     <thead>
-                                        <tr>
-                                            <th>E-mail</th>
-                                            <th>Name</th>
-                                            <th>Permission</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for perm in permissions %}
-                                        <tr>
-                                            <td>{{ perm.user.email }}</td>
-                                            <td>{{ perm.user.last_name }}</td>
-                                            <td><input type="checkbox" name="grant" value="{{ perm.user.email }}"></td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                                <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class=""></i>Grant</button>
-                            </form>
+                            <div class="tab-pane fade show {% if revoke_tab == False and method_tab == False %} active{% endif %}" id="nav-permissions" role="tabpanel" aria-labelledby="nav-home-tab">
+                                <form action="." name="permissionForm" method="post">
+                                    {% csrf_token %}
+                                     <table class="table" cellspacing="0">
+                                         <thead>
+                                            <tr>
+                                                <th>E-mail</th>
+                                                <th>Name</th>
+                                                <th>Grant Permission</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for perm in permissions %}
+                                            <tr>
+                                                <td>{{ perm.user.email }}</td>
+                                                <td>{{ perm.user.last_name }}</td>
+                                                <td><input type="checkbox" name="grant" value="{{ perm.user.email }}"></td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-plus"></i>Grant</button>
+                                </form>
                             </div>
 
                             <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
                                  <table class="table" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>E-mail</th>
                                             <th>Name</th>
                                             <th>Time</th>
+                                            <th>Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for log in logs %}
                                             <tr>
-                                                <td>{{ log }}</td>
-                                                <td>{{ log }}</td>
+                                                <td>{{ log.user.last_name }}</td>
                                                 <td>{{ log.time_stamp }}</td>
+                                                <td>{{ log.log_type }}</td>
                                             </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                            <form action="." name="accessesForm" method="post">
-                                {% csrf_token %}
-                                <table class="table" cellspacing="0">
-                                     <thead>
-                                        <tr>
-                                            <th>E-mail</th>
-                                            <th>Name</th>
-                                            <th>Permission</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for access in accesses %}
-                                        <tr>
-                                            <td>{{ access.user.email }}</td>
-                                            <td>{{ access.user.last_name }}</td>
-                                            <td><input type="checkbox" name="revoke" value="{{ access.user.email }}"></td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                                <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas f"></i>Revoke</button>
-                            </form>
+
+                            <div class="tab-pane fade {% ifequal revoke_tab True %}show active{% endifequal %}" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                                <form action="." name="accessesForm" method="post">
+                                    {% csrf_token %}
+                                    <table class="table" cellspacing="0">
+                                         <thead>
+                                            <tr>
+                                                <th>E-mail</th>
+                                                <th>Name</th>
+                                                <th>Revoke Permission</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for access in accesses %}
+                                            <tr>
+                                                <td>{{ access.user.email }}</td>
+                                                <td>{{ access.user.last_name }}</td>
+                                                <td><input type="checkbox" name="revoke" value="{{ access.user.email }}"></td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-times"></i>Revoke</button>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade {% ifequal method_tab True %}show active{% endifequal %}" id="nav-manage" role="tabpanel" aria-labelledby="nav-profile-tab">
+                                <form action="." name="accessesForm" method="post">
+                                    {% csrf_token %}
+                                     <table class="table" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Status</th>
+                                                <th/>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for method in methods %}
+                                                <tr>
+                                                    <td>{{ method.name }}</td>
+                                                    {% ifequal method.status True %}
+                                                    <td>On</td>
+                                                    {% else %}
+                                                    <td>Off</td>
+                                                    {% endifequal %}
+                                                    <td><input type="checkbox" name="method" value="{{ method.name }}"></td>
+                                                </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-cog"></i>Turn On/Off</button>
+                                </form>
                             </div>
                         </div>
                     </div>

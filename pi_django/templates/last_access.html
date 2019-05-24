@@ -71,7 +71,21 @@
   </nav>
 
   <!-- Page Content -->
-  <div class="container" style="margin-top:30px; width:400px;">
+  <div class="container" id="content" style="margin-top:30px; width:400px;">
+
+      <script type="text/javascript">
+            var ws = new WebSocket("ws://127.0.0.1:5678/"),
+                messages = document.createElement('div');
+            ws.onmessage = function (event) {
+                window.alert(event.data);
+                var messages = document.getElementById('content'),
+                    message = document.createElement('li'),
+                    content = document.createTextNode(event.data);
+                message.appendChild(content);
+                messages.appendChild(message);
+            };
+            document.body.appendChild(messages);
+        </script>
 
   </div>
   <!-- /.container -->

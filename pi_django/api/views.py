@@ -57,7 +57,7 @@ def check_audio_credential(request):
                     if logs[0].log_type == 'leave':
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
-                        last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                        last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                         asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
@@ -65,7 +65,7 @@ def check_audio_credential(request):
                 else:
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
-                    last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                    last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                     asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
         else:
@@ -102,7 +102,7 @@ def check_qrcode_credential(request):
                     if logs[0].log_type == 'leave':
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
-                        last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                        last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                         asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
@@ -110,7 +110,7 @@ def check_qrcode_credential(request):
                 else:
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
-                    last_access = {'name': user.last_name, 'photo': user.profile.photo.url}
+                    last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                     asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
         else:

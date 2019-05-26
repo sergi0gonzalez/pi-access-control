@@ -72,21 +72,23 @@
 
   <!-- Page Content -->
   <div class="container" id="content" style="margin-top:30px; width:400px;">
+      <div style="display: inline-block; width: auto">
+          <img src="" id="photo" style="width:100%">
+          <h2 id="name" align="center">John Doe</h2>
+          <p class="title" id="email" align="center">E-mail</p>
+          <p align="center">Universidade de Aveiro</p>
 
-      <script type="text/javascript">
-            var ws = new WebSocket("ws://127.0.0.1:5678/"),
-                messages = document.createElement('div');
-            ws.onmessage = function (event) {
-                window.alert(event.data);
-                var messages = document.getElementById('content'),
-                    message = document.createElement('li'),
-                    content = document.createTextNode(event.data);
-                message.appendChild(content);
-                messages.appendChild(message);
-            };
-            document.body.appendChild(messages);
-        </script>
-
+          <script type="text/javascript">
+                var ws = new WebSocket("ws://127.0.0.1:8765/");
+                ws.onmessage = function (event) {
+                    var msg = JSON.parse(event.data);
+                    var name_elem = document.getElementById('name');
+                    var img_elem = document.getElementById('photo');
+                    name_elem.innerHTML = msg.name;
+                    img_elem.src = msg.img;
+                };
+            </script>
+      </div>
   </div>
   <!-- /.container -->
 

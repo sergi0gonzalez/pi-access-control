@@ -73,10 +73,17 @@
   <!-- Page Content -->
   <div class="container" id="content" style="margin-top:30px; width:400px;">
       <div style="display: inline-block; width: auto">
-          <img src="" id="photo" style="width:100%">
-          <h2 id="name" align="center">John Doe</h2>
-          <p class="title" id="email" align="center">E-mail</p>
-          <p align="center">Universidade de Aveiro</p>
+          {% ifequal last_entry '' %}
+              <img src="" id="photo" style="width:100%">
+            <h2 id="name" align="center">Empty</h2>
+            <p class="title" id="email" align="center">Empty</p>
+            <p align="center">IEETA</p>
+          {% else %}
+              <img src="{{ last_entry.user.profile.photo.url }}" id="photo" style="width:100%">
+              <h2 id="name" align="center">{{ last_entry.user.last_name }}</h2>
+              <p class="title" id="email" align="center">{{ last_entry.user.email }}</p>
+              <p align="center">IEETA</p>
+          {% endifequal %}
 
           <script type="text/javascript">
                 var ws = new WebSocket("ws://127.0.0.1:8765/");

@@ -177,5 +177,10 @@ def security_dashboard(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def last_access(request):
-    tparams = {}
+    tparams = {'last_entry': 0}
+
+    logs = Log.objects.filter(log_type='entry').order_by('time_stamp').reverse()
+    if logs:
+        tparams['last_entry'] = logs[0]
+
     return render(request, 'last_access.html', tparams)

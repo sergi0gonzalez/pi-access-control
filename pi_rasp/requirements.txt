@@ -1,6 +1,7 @@
+cryptography==2.1.4
 opencv_python==4.0.0.21
+chirpsdk==3.4.5
 pyzbar==0.1.8
 numpy==1.16.2
-cryptography==2.1.4
 requests==2.18.4
-chirpsdk==3.4.5
+pyttsx3==2.71

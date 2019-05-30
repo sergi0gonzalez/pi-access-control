@@ -31,23 +31,6 @@ def get_nfc_challenge():
         return
     print(msg)
 
-
-def send_cc_data(cert_bytes):
-	data = {'cert':cert_bytes.hex()}
-	msg = create_msg_to_send(json.dumps(data), SERVERRSAPUB_KEY)
-	response = requests.post('http://10.42.0.1:8080/api/cc_cert/', data=msg).json()
-	msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
-	msg = json.loads(msg)
-	if 'error' in msg and msg['message'] == 'Authentication Failed!':
-		portic_signal(23, False)
-	elif 'error' in msg:
-		print('Error(...)', msg)
-		portic_signal(24)
-		return
-	elif 'ok' in msg:
-		print(msg)
-		portic_signal(18, True)
-
 def send_credential(identity, otp):
     data = {'identity': identity, 'password': otp}
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)

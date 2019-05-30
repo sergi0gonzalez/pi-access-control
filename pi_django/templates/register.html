@@ -19,7 +19,29 @@
 
      <!-- Font awesome icons -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-
+	
+	<script>
+		
+		function hexToBytes(hex) {
+			for (var bytes = [], c = 0; c < hex.length; c += 2)
+			bytes.push(parseInt(hex.substr(c, 2), 16));
+			return bytes;
+		}
+		
+		var ws = new WebSocket("ws://127.0.0.1:5678/");
+	 
+		ws.onmessage = function (event) {
+			//document.getElementById("inputFullName").value = event.data;
+			const message = JSON.parse(event.data);
+			document.getElementById("inputFullName").value = message.name;
+			document.getElementById("idCivil").value = message.civilian_id;
+			var imghex = message.image_bytes;
+			var imgbytes = hexToBytes(imghex);
+			document.getElementById("ccpic").src = "data:image/png;base64," + btoa(imghex.match(/\w{2}/g).map(function(a){return String.fromCharCode(parseInt(a, 16));} ).join(""));
+		};
+		
+		
+   </script>
 
 </head>
 
@@ -77,27 +99,32 @@
           <form action="." name="registerForm" method="post">
               {% csrf_token %}
                 <div class="form-group">
-                    <label for="exampleInputUsername2">E-mail</label>
-                    <input name="signup_email" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
+                    <label for="inputMail">E-mail</label>
+                    <input name="signup_email" type="text" class="form-control" id="inputMail" aria-describedby="usernameHelp">
                   </div>
                 <div class="form-group">
-                    <label for="exampleInputUsername2">Full Name</label>
-                    <input name="signup_full_name" type="text" class="form-control" id="exampleInputUsername2" aria-describedby="usernameHelp">
+                    <label for="inputFullName">Full Name</label>
+                    <input name="signup_full_name" type="text" class="form-control" id="inputFullName" aria-describedby="usernameHelp">
                 </div>
                   <div class="form-group">
-                    <label for="exampleInputPassword2">Password</label>
-                    <input name="signup_password" type="password" class="form-control" id="exampleInputPassword2" >
+                    <label for="inputPassword">Password</label>
+                    <input name="signup_password" type="password" class="form-control" id="inputPassword" >
                   </div>
                   <div class="form-group">
-                    <label for="exampleInputPassword2">Confirm Password</label>
-                    <input name="signup_confpassword" type="password" class="form-control" id="exampleInputPassword2" >
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input name="signup_confpassword" type="password" class="form-control" id="confirmPassword" >
+                  </div>
+                  <div class="form-group">
+                    <label for="idCivil">ID Civil + Foto (Cartao de Cidadao)</label>
+                    <input name="signup_confpassword" style="margin-bottom:10px;" type="text" class="form-control" id="idCivil" readonly>
+					<img src="" style="display:block;margin:auto;" id="ccpic" height="50%" width="50%"></img>
                   </div>
                     {% ifequal signup_error True %}
                     <div class="alert alert-danger" id="signup_error" role="alert">
                         Error: {{ signup_error_reason }}
                     </div>
                     {% endifequal %}
-              <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
+              <button  type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
           </form>
   </div>
   <!-- /.container -->
@@ -109,6 +136,10 @@
     </div>
     <!-- /.container -->
   </footer>
+
+
+
+
 
   <!-- Bootstrap core JavaScript -->
   <script src="{% static "vendor/jquery/jquery.min.js" %}"></script>

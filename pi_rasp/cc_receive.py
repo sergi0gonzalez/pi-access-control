@@ -3,8 +3,13 @@ import PyKCS11
 import time
 import sys
 import os
-import cryptography.hazmat.primitives.hashes
-from resources import send_cc_data, portic_signal
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, hmac
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from cryptography.exceptions import InvalidSignature
+from cryptography import x509
 
 class CCUnplugged(Exception):
 	pass
@@ -14,6 +19,7 @@ class CitizenCard:
 			self.lib = '/usr/local/lib/libpteidpkcs11.so'
 			self.pkcs11 = PyKCS11.PyKCS11Lib()
 			self.pkcs11.load(self.lib)
+
 			slots = self.pkcs11.getSlotList()
 
 			if len(slots) == 0:
@@ -82,29 +88,26 @@ try:
 	while(True):
 		try:
 			cc = CitizenCard().instance
-			cert_bytes = cc.get_auth_certificate()
-			cert = cryptography.x509.load_der_x509_certificate(cert_bytes)
+			cert = cc.get_auth_certificate()
+			cert = x509.load_der_x509_certificate(cert, default_backend())
+			pub_key = cert.public_key()
 			challenge_bytes = os.urandom(16)
 			signature = cc.sign_bytes(challenge_bytes) # TODO: janela fechada?
 			
-			public_key = cert.public_key()
-			public_key.verify(
-				signature,
-				challenge_bytes,
-				padding.PSS(
-					mgf=padding.MGF1(hashes.SHA1()),
-					salt_length=padding.PSS.MAX_LENGTH
-				),
-				hashes.SHA1()
-			)
+			try:
+				pub_key.verify(signature, challenge_bytes, padding.PKCS1v15(), hashes.SHA1())
+				print("[*] User authenticated...")
+				sleep(10)
+			except InvalidSignature:
+				# show error in rasp
+				print("[*] Signature wrong...")
+				sleep(10)
 			
-			send_cc_data(cert_bytes)
+			# IF VALID SEND TO SERVER
 			
+			# TODO: Escape loop procedures, signature wrong, already sent one message to server, etc
 		except (PyKCS11.PyKCS11Error, CCUnplugged) as e:
-			print("[*] CC Unplugged ... Continuing.") #replace by portic signal
-			pass
-		except cryptography.exceptions.InvalidSignature:
-			print("[*] Signature invalid... Continuing.") #replace by portic signal
+			print("[*] CC Unplugged ... Continuing.")
 			pass
 		time.sleep(2)
 except KeyboardInterrupt:

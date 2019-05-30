@@ -59,7 +59,17 @@ def check_credential(request):
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
 
     else:
-        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
+#@csrf_excempt
+#def check_cc_cert(request):
+#	if request.method == 'POST':
+#		msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
+#		msg = json.loads(msg)
+#		certbytes = bytes.fromhex(msg['cert'])
+#		certificate = cryptography.x509.load_der_x509_certificate(cert_bytes)
+		# to do ...
+#	else:
+#		return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
 
 
 @csrf_exempt

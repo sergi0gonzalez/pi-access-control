@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
@@ -15,13 +14,41 @@
   <link href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
 
   <!-- Custom styles for this template -->
-  <link href="{% static "css/small-business.css" %}" rel="stylesheet">
+  <link href="{% static "css/mobile.css" %}" rel="stylesheet">
 
      <!-- Font awesome icons -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
+  <script>
+    
+    function hexToBytes(hex) {
+      for (var bytes = [], c = 0; c < hex.length; c += 2)
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+      return bytes;
+    }
+
+    function trigger() {
+    
+      var ws = new WebSocket("ws://127.0.0.1:5678/");
+   
+      ws.onmessage = function (event) {
+        //document.getElementById("inputFullName").value = event.data;
+        const message = JSON.parse(event.data);
+        document.getElementById("inputFullName").value = message.name;
+        document.getElementById("idCivil").value = message.civilian_id;
+        var imghex = message.image_bytes;
+        var imgbytes = hexToBytes(imghex);
+        document.getElementById("ccpic").src = "data:image/png;base64," + btoa(imghex.match(/\w{2}/g).map(function(a){return String.fromCharCode(parseInt(a, 16));} ).join(""));
+      };
+
+    }
+    
+    
+   </script>
+    
 
 </head>
+
 
 <body style="padding-bottom: 70px;">
 
@@ -71,9 +98,61 @@
     </div>
   </nav>
 
+
   <!-- Page Content -->
-  <div class="container" style="margin-top:30px; width:400px;">
-          <h2>Register</h2>
+  <div class="row justify-content-between">
+    <div class="card text-center col-6" style="width: 37.6%; height: 250px;" id="default">
+      <div class="card-header">
+        <div class="container">
+      <a class='animated-arrow' href='#' onclick="hideCC()" id="cardl">
+        <span class='the-arrow -left'>
+          <span class='shaft'></span>
+        </span>
+        <span class='main'>
+          <span class='text'>
+            Default Registration
+          </span>
+          <span class='the-arrow -right'>
+            <span class='shaft'></span>
+          </span>
+        </span>
+      </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-text" id="desc1">Just a default registration process</p>
+        <p class="card-text"> </p>
+        <p class="card-text"> </p>
+        <p class="card-text"> </p>
+      </div>
+    </div>
+  <div class="card text-center col-6" style="width: 37.6%; height: 250px;" id="cardCC">
+      <div class="card-header">
+        <div class="container">
+      <a class='animated-arrow' href='#' onclick="hideDef(); trigger();">
+        <span class='the-arrow -left'>
+          <span class='shaft'></span>
+        </span>
+        <span class='main'>
+          <span class='text'>
+            Citizen Card Assisted Registration
+          </span>
+          <span class='the-arrow -right'>
+            <span class='shaft'></span>
+          </span>
+        </span>
+      </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-text">You'll be asked to insert your Citizen Card to upload some public data:</p>
+        <p class="card-text">-> Photo</p>
+        <p class="card-text">-> Name</p>
+        <p class="card-text">-> CC Number</p>
+
+      </div>
+  </div>
+  <div class="col-md-4" id="regis" style="display: none;">
           <form action="." name="registerForm" method="post">
               {% csrf_token %}
                 <div class="form-group">
@@ -100,6 +179,76 @@
               <button type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
           </form>
   </div>
+  <div class="col-md-4" id="regisCC" style="display: none;">
+          <form action="." name="registerForm" method="post">
+              {% csrf_token %}
+                <div class="form-group">
+                    <label for="inputMail">E-mail</label>
+                    <input name="signup_email" type="text" class="form-control" id="inputMail" aria-describedby="usernameHelp">
+                  </div>
+                <div class="form-group">
+                    <label for="inputFullName">Full Name</label>
+                    <input name="signup_full_name" type="text" class="form-control" id="inputFullName" aria-describedby="usernameHelp">
+                </div>
+                  <div class="form-group">
+                    <label for="inputPassword">Password</label>
+                    <input name="signup_password" type="password" class="form-control" id="inputPassword" >
+                  </div>
+                  <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input name="signup_confpassword" type="password" class="form-control" id="confirmPassword" >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="idCivil">ID Civil + Foto (Cartao de Cidadao)</label>
+                    <input name="idCivil" style="margin-bottom:10px;" type="text" class="form-control" id="idCivil" readonly>
+          <img src="" style="display:block;margin:auto;" id="ccpic" height="50%" width="50%"></img>
+                  </div>
+                    {% ifequal signup_error True %}
+                    <div class="alert alert-danger" id="signup_error" role="alert">
+                        Error: {{ signup_error_reason }}
+                    </div>
+                    {% endifequal %}
+              <button  type="submit" class="btn btn-outline-info btn-block"><i style="margin-right: 8px" class="fas fa-user-plus"></i> Register</button>
+          </form>
+  </div>
+  </div>
+
+  <script>
+    function hideDef() {
+
+      var y = document.getElementById('regisCC');
+        if (y.style.display === "none") {
+          y.style.display = "flex";
+        } else {
+          y.style.display = "none";
+        }
+      var x = document.getElementById('default');
+        if (x.style.display === "none") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+    }
+  </script>
+
+  <script>
+    function hideCC() {
+
+      var y = document.getElementById('regis');
+        if (y.style.display === "none") {
+          y.style.display = "flex";
+        } else {
+          y.style.display = "none";
+        }
+      var x = document.getElementById('cardCC');
+        if (x.style.display === "none") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+    }
+  </script>
   <!-- /.container -->
 
   <!-- Footer -->

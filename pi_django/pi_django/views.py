@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from pi_django.models import Credential, Permission, Log, Method
+from pi_django.models import Credential, Permission, Log, Method, Profile
 from django.utils import timezone
 import re
 import os
@@ -41,6 +41,8 @@ def register_page(request):
     if "signup_email" in request.POST:
         tparams["error"] = False
         tparams["error_reason"] = None
+        print("conf pass: " + request.POST['signup_confpassword'])
+        print("pass: " + request.POST['signup_password'])
         if request.POST['signup_email'] == '' or not re.match(r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)',
                                                               request.POST['signup_email']):
             tparams["signup_error"] = True
@@ -67,6 +69,10 @@ def register_page(request):
                                             password=request.POST["signup_password"])
             user.last_name = request.POST['signup_full_name']
             user.save()
+            profile = Profile.objects.get(user=user)
+            profile.id_number = request.POST['idCivil']
+            #photosavemissing
+            profile.save()
             perm = Permission(user=user)
             perm.save()
             secret = os.urandom(20).hex()

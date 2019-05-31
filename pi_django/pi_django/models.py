@@ -7,6 +7,7 @@ from django.dispatch import receiver
 class Profile(models.Model):
     photo = models.ImageField(upload_to='profile_image', blank=True)
     id_number = models.CharField(max_length=15, blank=True)
+    rfid = models.CharField(max_length=12, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 

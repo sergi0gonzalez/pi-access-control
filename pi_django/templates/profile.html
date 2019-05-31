@@ -24,18 +24,8 @@
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-    <style>
-        .project-tab {
-    padding: 10%;
-    margin-top: -8%;
-}
-.project-tab #tabs{
-    background: #007b5e;
-    color: #eee;
-}
-.project-tab #tabs h6.section-title{
-    color: #eee;
-}
+<style>
+
 .project-tab #tabs .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
     color: #0062cc;
     background-color: transparent;
@@ -77,8 +67,8 @@
     text-align: center;
 }
 .profile-img img{
-    width: 70%;
-    height: 100%;
+    width: 40%;
+    height: 40%;
 }
 .profile-img .file {
     position: relative;
@@ -88,7 +78,7 @@
     border: none;
     border-radius: 0;
     font-size: 15px;
-    background: #212529b8;
+    background: none;
 }
 .profile-img .file input {
     position: absolute;
@@ -133,10 +123,7 @@
     border: none;
     border-bottom:2px solid #0062cc;
 }
-.profile-work{
-    padding: 14%;
-    margin-top: -15%;
-}
+
 .profile-work p{
     font-size: 12px;
     color: #818182;
@@ -160,7 +147,8 @@
     color: #0062cc;
 }
 
-    </style>
+</style>
+
 </head>
 
 <body style="padding-bottom: 70px;">
@@ -297,15 +285,37 @@
                                     <div class="col-md-6">
                                         <label>Active</label>
                                     </div>
+                                    <div class="col-md-6">
                                     {% ifequal perm True %}
-                                    <div class="col-md-6">
                                         <p>Yes</p>
-                                    </div>
                                     {% else %}
-                                    <div class="col-md-6">
                                         <p>No</p>
-                                    </div>
                                     {% endifequal %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Last Access</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                    {% ifequal last_access "" %}
+                                        <p>No entry</p>
+                                    {% else %}
+                                        <p>{{ last_access.time_stamp }}</p>
+                                    {% endifequal %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label>Access</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                    {% ifequal last_access "" %}
+                                        <p>No entry</p>
+                                    {% else %}
+                                        <p>{{ last_access.log_type }}</p>
+                                    {% endifequal %}
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade {% ifequal active_tab True %}show active{% endifequal %}" id="password" role="tabpanel" aria-labelledby="password-tab">

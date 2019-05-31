@@ -90,10 +90,12 @@ def logout_page(request):
 
 @login_required
 def profile_page(request):
-    tparams = {'perm': True, 'active_tab': False, 'error': False}
+    tparams = {'perm': True, 'active_tab': False, 'error': False, 'last_access': ''}
 
     if Permission.objects.filter(user=request.user).exists():
         tparams['perm'] = Permission.objects.get(user=request.user).state
+    if Log.objects.filter(user=request.user).exists():
+        tparams['last_access'] = Log.objects.filter(user=request.user).all().order_by('time_stamp').reverse()[0]
     if request.method == 'POST':
         if 'btnChange' in request.POST:
             tparams['active_tab'] = True
@@ -190,3 +192,14 @@ def last_access(request):
         tparams['last_entry'] = logs[0]
 
     return render(request, 'last_access.html', tparams)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def manage_user(request, user_email):
+    tparams = {'user': User.objects.get(username=user_email)}
+
+    if request.method == 'POST':
+        print('Post')
+
+    return render(request, 'manage_usar.html', tparams)

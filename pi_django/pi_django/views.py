@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from pi_django.models import Credential, Permission, Log, Method
+from pi_django.models import Credential, Permission, Log, Method, Profile
 from django.utils import timezone
 import re
 import os
+import io
 
 
 def main_page(request):
@@ -67,6 +68,11 @@ def register_page(request):
                                             password=request.POST["signup_password"])
             user.last_name = request.POST['signup_full_name']
             user.save()
+            if 'signup_civilid' in request.POST:
+                profile = Profile.objects.get(user=user)
+                profile.id_number = request.POST['signup_civilid']
+                profile.photo.save('photo.png', io.BytesIO(bytes.fromhex(request.POST['signup_photo'])), save=False)
+                profile.save()
             perm = Permission(user=user)
             perm.save()
             secret = os.urandom(20).hex()

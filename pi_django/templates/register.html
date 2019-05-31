@@ -36,8 +36,8 @@
 			document.getElementById("inputFullName").value = message.name;
 			document.getElementById("idCivil").value = message.civilian_id;
 			var imghex = message.image_bytes;
-			var imgbytes = hexToBytes(imghex);
 			document.getElementById("ccpic").src = "data:image/png;base64," + btoa(imghex.match(/\w{2}/g).map(function(a){return String.fromCharCode(parseInt(a, 16));} ).join(""));
+			document.getElementById("photo_cc").value = imghex;
 		};
 		
 		
@@ -115,9 +115,10 @@
                     <input name="signup_confpassword" type="password" class="form-control" id="confirmPassword" >
                   </div>
                   <div class="form-group">
-                    <label for="idCivil">ID Civil + Foto (Cartao de Cidadao)</label>
-                    <input name="signup_confpassword" style="margin-bottom:10px;" type="text" class="form-control" id="idCivil" readonly>
-					<img src="" style="display:block;margin:auto;" id="ccpic" height="50%" width="50%"></img>
+                    <label for="idCivil">Civil ID + Photo (Citizen Card)</label>
+                    <input name="signup_civilid" style="margin-bottom:10px;" type="text" class="form-control" id="idCivil" readonly>
+					<img src="" style="display:block;margin:auto;" id="ccpic" height="50%" width="50%"/>
+                      <input type="hidden" name="signup_photo" id="photo_cc"/>
                   </div>
                     {% ifequal signup_error True %}
                     <div class="alert alert-danger" id="signup_error" role="alert">

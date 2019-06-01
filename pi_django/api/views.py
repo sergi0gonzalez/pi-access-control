@@ -67,7 +67,8 @@ def check_audio_credential(request):
                     log.save()
                     last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                     asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
-                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
+                                                                         user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
     else:
@@ -112,7 +113,8 @@ def check_qrcode_credential(request):
                     log.save()
                     last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                     asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
-                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
+                                                                         user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
     else:
@@ -122,7 +124,7 @@ def check_qrcode_credential(request):
 @csrf_exempt
 def check_rfid_credential(request):
     if request.method == 'POST':
-        if not Method.objects.get(name='QRCode').status:
+        if not Method.objects.get(name='RFID').status:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'RFID authentication disabled!'), RASP_RSAPUB_KEY))
         msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
         msg = json.loads(msg)
@@ -151,7 +153,8 @@ def check_rfid_credential(request):
                 log.save()
                 last_access = {'name': user.last_name, 'img': user.profile.photo.url}
                 asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
-            return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+            return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
+                                                                     user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
     else:
@@ -218,12 +221,13 @@ def create_msg_to_send(data, public_key):
     return msg
 
 
-def create_status_msg(code, msg):
+def create_status_msg(code, msg, user_identity):
     data = {}
     if code != 200:
         data['error'] = code
     else:
         data['ok'] = code
+        data['user'] = user_identity
     data['message'] = msg
     return json.dumps(data)
 

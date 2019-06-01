@@ -197,9 +197,19 @@ def last_access(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def manage_user(request, user_email):
-    tparams = {'user': User.objects.get(username=user_email)}
+    tparams = {'user_search': User.objects.get(username=user_email)}
 
     if request.method == 'POST':
-        print('Post')
+        user = User.objects.get(username=request.POST['manage_user'])
+        if 'credential' in request.POST:
+            secret = os.urandom(20).hex()
+            cred = Credential(status="valid", user=user, data=secret)
+            cred.save()
+        if user.profile.rfid == '' and request.POST['manage_rfid'] != '':
+            user.profile.rfid = request.POST['manage_rfid']
+            user.profile.save()
+        elif user.profile.rfid != request.POST['manage_rfid'] and request.POST['manage_rfid'] != '':
+            user.profile.rfid = request.POST['manage_rfid']
+            user.profile.save()
 
-    return render(request, 'manage_usar.html', tparams)
+    return render(request, 'manage_user.html', tparams)

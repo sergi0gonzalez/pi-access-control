@@ -72,12 +72,30 @@
 
   <!-- Page Content -->
   <div class="container" id="content" style="margin-top:30px; width:400px;">
-      <div style="display: inline-block; width: auto">
-          <img src="{{ user.profile.photo.url }}" id="photo" style="width:100%">
-          <h2 id="name" align="center">{{ user.last_name }}</h2>
-          <p class="title" id="email" align="center">{{ user.email }}</p>
-          <input name="manage_rfid" type="text" class="form-control" id="rfid_input" value="{{ user.profile.rfid }}">
-      </div>
+      <form action="." method="post">
+        {% csrf_token %}
+        <div style="display: inline-block; width: auto">
+            <img src="{{ user_search.profile.photo.url }}" id="photo" style="display:block;margin:auto;width:40%;height: 40%;">
+            <h5 id="name" align="center">{{ user_search.last_name }}</h5>
+            <p class="title" id="email" align="center">{{ user_search.email }}</p>
+            <div class="row" style="width: auto">
+                <div class="col-md" style="width: auto">
+                    <label>RFID UID</label>
+                    <input name="manage_rfid" type="text" value="{{ user_search.profile.rfid }}">
+                </div>
+            </div>
+            <div class="row" style="width: auto">
+                <div class="col-md" style="width: auto">
+                    <label>Reset Credential</label>
+                    <input type="checkbox" name="credential" value="{{ user_search.username }}">
+                </div>
+            </div>
+            <div class="row" style="width: auto">
+                <input type="submit" class="profile-edit-btn" name="btnChange" value="Submit changes"/>
+            </div>
+            <input type="hidden" name="manage_user" value="{{ user_search.username }}"/>
+        </div>
+      </form>
   </div>
   <!-- /.container -->
 

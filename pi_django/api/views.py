@@ -71,7 +71,7 @@ def check_audio_credential(request):
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
     else:
-        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
 
 
 @csrf_exempt
@@ -116,7 +116,46 @@ def check_qrcode_credential(request):
         else:
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
     else:
-        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only GET method is allowed!'), RASP_RSAPUB_KEY))
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
+
+
+@csrf_exempt
+def check_rfid_credential(request):
+    if request.method == 'POST':
+        if not Method.objects.get(name='QRCode').status:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'RFID authentication disabled!'), RASP_RSAPUB_KEY))
+        msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
+        msg = json.loads(msg)
+        email = msg['identity']
+        if User.objects.filter(username=email).exists():
+            user = User.objects.get(username=email)
+        else:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'User does not exist!'), RASP_RSAPUB_KEY))
+        # TODO: Permission validation (and perm.end_time > timezone.now())
+        perm = Permission.objects.get(user=user)
+        if perm.state and perm.start_time < timezone.now():
+            if user.profile.rfid != msg['rfid_uid']:
+                return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
+            logs = Log.objects.select_related().filter(user=user).all().order_by('time_stamp').reverse()
+            if logs:
+                if logs[0].log_type == 'leave':
+                    log = Log(user=user, log_type='entry', time_stamp=timezone.now())
+                    log.save()
+                    last_access = {'name': user.last_name, 'img': user.profile.photo.url}
+                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                else:
+                    log = Log(user=user, log_type='leave', time_stamp=timezone.now())
+                    log.save()
+            else:
+                log = Log(user=user, log_type='entry', time_stamp=timezone.now())
+                log.save()
+                last_access = {'name': user.last_name, 'img': user.profile.photo.url}
+                asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+            return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful'), RASP_RSAPUB_KEY))
+        else:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
+    else:
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
 
 
 @csrf_exempt

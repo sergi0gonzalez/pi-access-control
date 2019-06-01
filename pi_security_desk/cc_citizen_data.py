@@ -1,8 +1,12 @@
 from PyKCS11 import PyKCS11Error
+from wand.image import Image
 import PyKCS11
 import sys
 
 class CC_NOT_PRESENT(Exception):
+    pass
+
+class DEVICE_REMOVED(Exception):
     pass
 
 class Citizen_Data(object):
@@ -16,7 +20,10 @@ class Citizen_Data(object):
 
     def open_session(self):
         try:
-            self.session = self.pkcs11.openSession(0)
+            session = self.pkcs11.openSession(0)
+            obj = session.findObjects([(PyKCS11.CKA_APPLICATION, 'Citizen Data')])[0]
+            attr = session.getAttributeValue(obj, self.all_attr)
+            self.data = bytes(dict(zip(map(PyKCS11.CKA.get, self.all_attr), attr))['CKA_VALUE'])
         except PyKCS11Error as e:
             if str(e).split()[0] == 'CKR_SLOT_ID_INVALID':
                 #print('No card reader!')
@@ -24,10 +31,9 @@ class Citizen_Data(object):
             elif str(e).split()[0] == 'CKR_TOKEN_NOT_PRESENT':
                 #print('No card plugged!')
                 raise CC_NOT_PRESENT
-        obj = self.session.findObjects([(PyKCS11.CKA_APPLICATION, 'Citizen Data')])[0]
-        attr = self.session.getAttributeValue(obj, self.all_attr)
-        self.data = bytes(dict(zip(map(PyKCS11.CKA.get, self.all_attr), attr))['CKA_VALUE'])
-
+            elif str(e).split()[0] == 'CKR_DEVICE_REMOVED':
+                raise DEVICE_REMOVED
+        
 
     def get_data_bytes(self):
         return self.data
@@ -42,26 +48,29 @@ class Citizen_Data(object):
         return name, id_number
 
 
-    def get_photo_bytes(self):
-        hex_data = self.data.hex()
-        pos = hex_data.find('0000000c6a502020')
-        return bytes.fromhex(hex_data[pos:])
-
-    
     def get_photo_hex(self):
         hex_data = self.data.hex()
         pos = hex_data.find('0000000c6a502020')
         return hex_data[pos:]
 
 
-    def save_photo_to_file(self, filename=None):
-        if not filename:
-            filename = filename + '.jp2'
-        else:
-            filename = 'photo.jp2'
-        hex_data = self.data.hex()
-        pos = hex_data.find('0000000c6a502020')
-        photo = hex_data[pos:]
-        with open(filename, 'wb') as f:
-            f.write(bytes.fromhex(hex_data[pos:]))
+    def get_photo_bytes(self):
+        return bytes.fromhex(self.get_photo_hex())
+
+
+    def get_photo_png_bytes(self):
+        with Image(blob=self.get_photo_bytes()) as img:
+            png_photo = img.convert('png')
+        return png_photo.make_blob()
+
+
+    def save_photo_to_file(self, filename='photo', filetype='jp2'):
+        if filetype == 'jp2':
+            with open(filename+'.jp2', 'wb') as f:
+                f.write(self.get_photo_bytes())
+        elif filetype == 'png':
+            with Image(blob=self.get_photo_bytes) as img:
+                png_photo = img.convert('png')
+            with open(filename+'.png', 'wb') as f:
+                f.write(bytes.fromhex(png.photo.make_blob()))
 

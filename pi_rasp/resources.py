@@ -31,7 +31,7 @@ def send_rfid_credential(tag):
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     msg = json.loads(msg)
     if DEBUG:
-        print('Message received --> '+msg)
+        print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
         portic_signal(23, False)
     elif 'error' in msg:
@@ -48,7 +48,7 @@ def send_audio_credential(identity, otp):
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     msg = json.loads(msg)
     if DEBUG:
-        print('Message received --> '+msg)
+        print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
         portic_signal(23, False)
     elif 'error' in msg:
@@ -65,7 +65,7 @@ def send_qrcode_credential(identity, otp):
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     msg = json.loads(msg)
     if DEBUG:
-        print('Message received --> '+msg)
+        print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == "Authentication Failed!":
         portic_signal(23, False)
     elif 'error' in msg:
@@ -81,7 +81,9 @@ def portic_signal(port, access=None, identity=None):
     GPIO.setup(port, GPIO.OUT)
     GPIO.output(port, GPIO.HIGH)
     if access != None:
-        if access:
+        if access == 'empty':
+            time.sleep(0.5)
+        elif access:
             text_to_speech('Welcome, '+identity+'!')
         else:
             text_to_speech('Access denied!')
@@ -147,7 +149,4 @@ def check_hmac(key, data, digest):
 def verify_signature_msg(signature, msg, public_key):
     sign_key = __asym_obj.load_public_key(public_key)
     return __asym_obj.verify_sign(sign_key, msg.encode(), signature)
-
-#get_nfc_challenge()
-#send_audio_credential()
 

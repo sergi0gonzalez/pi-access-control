@@ -24,7 +24,7 @@ try:
         if not ignore and len(decodedObjects) == 0:
             ignore = True
         if ignore and len(decodedObjects) > 0:
-            portic_signal(24)
+            portic_signal(24, 'empty')
             for obj in decodedObjects:
                 data = obj.data.decode().split(':')
                 send_qrcode_credential(data[0], data[1])

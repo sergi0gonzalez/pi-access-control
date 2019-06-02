@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
-from pi_django.models import Credential, Permission, Log, Method
+from pi_django.models import Credential, Permission, Log, Method, Profile
 from rest_framework.decorators import api_view
 from tools.crypto import Asymmetric, Symmetric, HMAC
 from django.utils import timezone
@@ -15,6 +15,7 @@ import time
 import logging
 import asyncio
 import websockets
+import socket
 
 RASP_RSAPUB_KEY = 'tools/rasp_rsa.pub'
 RASP_ECCPUB_KEY = 'tools/rasp_ecc.pub'
@@ -58,7 +59,7 @@ def check_audio_credential(request):
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
                         last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                        asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                        send_last_access(last_access)
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
                         log.save()
@@ -66,7 +67,7 @@ def check_audio_credential(request):
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
                     last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                    send_last_access(last_access)
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
                                                                          user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
@@ -104,7 +105,7 @@ def check_qrcode_credential(request):
                         log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                         log.save()
                         last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                        asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                        send_last_access(last_access)
                     else:
                         log = Log(user=user, log_type='leave', time_stamp=timezone.now())
                         log.save()
@@ -112,7 +113,7 @@ def check_qrcode_credential(request):
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
                     last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                    send_last_access(last_access)
                 return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
                                                                          user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
@@ -128,15 +129,15 @@ def check_rfid_credential(request):
             return JsonResponse(create_msg_to_send(create_status_msg(400, 'RFID authentication disabled!'), RASP_RSAPUB_KEY))
         msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
         msg = json.loads(msg)
-        email = msg['identity']
-        if User.objects.filter(username=email).exists():
-            user = User.objects.get(username=email)
+        rfid_tag = msg['tag']
+        if Profile.objects.filter(rfid=rfid_tag).exists():
+            user = User.objects.get(profile=Profile.objects.get(rfid=rfid_tag))
         else:
-            return JsonResponse(create_msg_to_send(create_status_msg(400, 'User does not exist!'), RASP_RSAPUB_KEY))
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'User does not exist or does not have rfid associated!'), RASP_RSAPUB_KEY))
         # TODO: Permission validation (and perm.end_time > timezone.now())
         perm = Permission.objects.get(user=user)
         if perm.state and perm.start_time < timezone.now():
-            if user.profile.rfid != msg['rfid_uid']:
+            if user.profile.rfid != rfid_tag:
                 return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
             logs = Log.objects.select_related().filter(user=user).all().order_by('time_stamp').reverse()
             if logs:
@@ -144,7 +145,7 @@ def check_rfid_credential(request):
                     log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                     log.save()
                     last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                    asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                    send_last_access(last_access)
                 else:
                     log = Log(user=user, log_type='leave', time_stamp=timezone.now())
                     log.save()
@@ -152,7 +153,7 @@ def check_rfid_credential(request):
                 log = Log(user=user, log_type='entry', time_stamp=timezone.now())
                 log.save()
                 last_access = {'name': user.last_name, 'img': user.profile.photo.url}
-                asyncio.get_event_loop().run_until_complete(send_last_access(last_access))
+                send_last_access(last_access)
             return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
                                                                      user.last_name.split()[0]), RASP_RSAPUB_KEY))
         else:
@@ -198,9 +199,18 @@ def mobile_get_credential(request):
     return JsonResponse({"credential": cred.data})
 
 
-async def send_last_access(msg):
-    async with websockets.connect('ws://localhost:8765') as websocket:
-        await websocket.send(msg)
+def send_last_access(msg):
+    async def send_access():
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect(('localhost', 8765))
+            s.close()
+            async with websockets.connect('ws://localhost:8765') as websocket:
+                await websocket.send(msg)
+            return asyncio.get_event_loop().run_until_complete(send_access())
+        except:
+            print('Websocket not open!')
+            return
 
 
 def create_msg_to_send(data, public_key):
@@ -221,7 +231,7 @@ def create_msg_to_send(data, public_key):
     return msg
 
 
-def create_status_msg(code, msg, user_identity):
+def create_status_msg(code, msg, user_identity=None):
     data = {}
     if code != 200:
         data['error'] = code

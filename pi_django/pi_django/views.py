@@ -203,6 +203,7 @@ def manage_user(request, user_email):
         user = User.objects.get(username=request.POST['manage_user'])
         if 'credential' in request.POST:
             secret = os.urandom(20).hex()
+            print('Secret ---> ',secret)
             cred = Credential(status="valid", user=user, data=secret)
             cred.save()
         if user.profile.rfid == '' and request.POST['manage_rfid'] != '':

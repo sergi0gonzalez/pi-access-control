@@ -188,7 +188,7 @@
                                         <tbody>
                                         {% for access in accesses %}
                                             <tr>
-                                                <td>{{ access.user.email }}</td>
+                                                <td><a href="/manage_user/{{ access.user.email }}/">{{ access.user.email }}</a></td>
                                                 <td>{{ access.user.last_name }}</td>
                                                 <td><input type="checkbox" name="revoke" value="{{ access.user.email }}"></td>
                                             </tr>

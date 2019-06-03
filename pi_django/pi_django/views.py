@@ -90,10 +90,12 @@ def logout_page(request):
 
 @login_required
 def profile_page(request):
-    tparams = {'perm': True, 'active_tab': False, 'error': False}
+    tparams = {'perm': True, 'active_tab': False, 'error': False, 'last_access': ''}
 
     if Permission.objects.filter(user=request.user).exists():
         tparams['perm'] = Permission.objects.get(user=request.user).state
+    if Log.objects.filter(user=request.user).exists():
+        tparams['last_access'] = Log.objects.filter(user=request.user).all().order_by('time_stamp').reverse()[0]
     if request.method == 'POST':
         if 'btnChange' in request.POST:
             tparams['active_tab'] = True
@@ -190,3 +192,25 @@ def last_access(request):
         tparams['last_entry'] = logs[0]
 
     return render(request, 'last_access.html', tparams)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def manage_user(request, user_email):
+    tparams = {'user_search': User.objects.get(username=user_email)}
+
+    if request.method == 'POST':
+        user = User.objects.get(username=request.POST['manage_user'])
+        if 'credential' in request.POST:
+            secret = os.urandom(20).hex()
+            print('Secret ---> ',secret)
+            cred = Credential(status="valid", user=user, data=secret)
+            cred.save()
+        if user.profile.rfid == '' and request.POST['manage_rfid'] != '':
+            user.profile.rfid = request.POST['manage_rfid']
+            user.profile.save()
+        elif user.profile.rfid != request.POST['manage_rfid'] and request.POST['manage_rfid'] != '':
+            user.profile.rfid = request.POST['manage_rfid']
+            user.profile.save()
+
+    return render(request, 'manage_user.html', tparams)

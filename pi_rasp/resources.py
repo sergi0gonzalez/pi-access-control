@@ -10,7 +10,7 @@ import json
 import time
 import sys
 
-
+DEBUG = True
 SERVER_RSAPUB_KEY = 'server_rsa.pub'
 SERVER_SIGNPUB_KEY = 'server_ecc.pub'
 #server_url = 'http://192.168.160.104:8080/api/'
@@ -24,21 +24,38 @@ __rsa_priv = __asym_obj.load_private_key('rasp_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('rasp_ecc', 'qwerty')
 
 
+def send_rfid_credential(tag):
+    data = {'tag': tag}
+    msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
+    response = requests.post(server_url+'check_rfid_credential/', data=msg).json()
+    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
+    msg = json.loads(msg)
+    if DEBUG:
+        print('Message received --> ',msg)
+    if 'error' in msg and msg['message'] == 'Authentication Failed!':
+        portic_signal(23, False)
+    elif 'error' in msg:
+        portic_signal(24)
+        return
+    elif 'ok' in msg:
+        portic_signal(18, True, msg['user'])
+
+
 def send_audio_credential(identity, otp):
     data = {'identity': identity, 'password': otp}
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
     response = requests.post(server_url+'check_audio_credential/', data=msg).json()
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
     msg = json.loads(msg)
+    if DEBUG:
+        print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
         portic_signal(23, False)
     elif 'error' in msg:
-        print('Error(...)', msg)
         portic_signal(24)
         return
     elif 'ok' in msg:
-        print(msg)
-        portic_signal(18, True)
+        portic_signal(18, True, msg['user'])
 
 
 def send_qrcode_credential(identity, otp):
@@ -46,29 +63,32 @@ def send_qrcode_credential(identity, otp):
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
     response = requests.post(server_url+'check_qrcode_credential/', data=msg).json()
     msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
-    print('Msg -->'+msg)
     msg = json.loads(msg)
+    if DEBUG:
+        print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == "Authentication Failed!":
         portic_signal(23, False)
     elif 'error' in msg:
-        print('Error(...)', msg)
         portic_signal(24)
         return
     elif 'ok' in msg:
-        print(msg)
-        portic_signal(18, True)
+        portic_signal(18, True, msg['user'])
 
 
-def portic_signal(port, access=None):
+def portic_signal(port, access=None, identity=None):
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(port, GPIO.OUT)
     GPIO.output(port, GPIO.HIGH)
     if access != None:
-        if access:
-            text_to_speech('Welcome!')
+        if access == 'empty':
+            time.sleep(0.5)
+        elif access:
+            text_to_speech('Welcome, '+identity+'!')
         else:
             text_to_speech('Access denied!')
+    else:
+        text_to_speech('Talk with the security officer!')
     time.sleep(0.5)
     GPIO.output(port, GPIO.LOW)
 
@@ -129,7 +149,4 @@ def check_hmac(key, data, digest):
 def verify_signature_msg(signature, msg, public_key):
     sign_key = __asym_obj.load_public_key(public_key)
     return __asym_obj.verify_sign(sign_key, msg.encode(), signature)
-
-#get_nfc_challenge()
-#send_audio_credential()
 

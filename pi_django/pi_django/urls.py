@@ -30,5 +30,6 @@ urlpatterns = [
     path('mobile_app/', views.mobile_page),
     path('students_perms/', views.students_perms),
     path('last_access/', views.last_access),
+    path('manage_user/<str:user_email>/', views.manage_user),
     path('api/', include('api.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

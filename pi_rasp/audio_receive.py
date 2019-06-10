@@ -1,5 +1,5 @@
 from chirpsdk import ChirpConnect, CallbackSet
-from resources import send_credential
+from resources import send_audio_credential
 
 class Callbacks(CallbackSet):
 

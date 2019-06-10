@@ -1,5 +1,6 @@
 import socket
 import sys
+from resources import send_nfc_credential
 
 def recv_bytes(the_socket):
 	total_data=[]
@@ -21,9 +22,18 @@ if __name__ == "__main__":
 		conn, client_address = sock.accept()
 		try:
 			print('connection from', client_address)
-			all_data = recv_bytes(conn)
+			all_data = b''
+			while(True):
+				dt = conn.recv(65535)
+				all_data += dt
+				if len(dt)<65535:
+					break
+			
 			all_data = all_data.decode("utf-8")
-			print(all_data)	
+			print(all_data)
+			data = all_data.split(":")
+			send_nfc_credential(data[0], data[1])	
 		finally:
 			print('connection closed')
 			conn.close()
+	

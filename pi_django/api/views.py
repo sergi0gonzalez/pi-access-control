@@ -29,6 +29,50 @@ __rsa_priv = __asym_obj.load_private_key('tools/server_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('tools/server_ecc', 'qwerty')
 logger = logging.getLogger(__name__)
 
+@csrf_exempt
+def check_nfc_credential(request):
+    if request.method == 'POST':
+        if not Method.objects.get(name='NFC').status:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'NFC authentication disabled!'), RASP_RSAPUB_KEY))
+        msg = json.loads(decrypt_msg(request.POST, RASP_ECCPUB_KEY))
+        msg = json.loads(msg)
+        email = msg['identity']
+        if User.objects.filter(username=email).exists():
+            user = User.objects.get(username=email)
+        else:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'User does not exist!'), RASP_RSAPUB_KEY))
+        # TODO: Permission validation (and perm.end_time > timezone.now())
+        perm = Permission.objects.get(user=user)
+        if perm.state and perm.start_time < timezone.now():
+            credential = Credential.objects.get(user=user)
+            if credential is not None and credential.status == 'valid':
+                key = bytes.fromhex(credential.data)
+                totp = TOTP(key, 8, SHA256(), 30, backend=default_backend())
+                try:
+                    totp.verify(msg['password'].encode(), time.time())
+                except InvalidToken:
+                    return JsonResponse(create_msg_to_send(create_status_msg(400, 'Authentication Failed!'), RASP_RSAPUB_KEY))
+                logs = Log.objects.select_related().filter(user=user).all().order_by('time_stamp').reverse()
+                if logs:
+                    if logs[0].log_type == 'leave':
+                        log = Log(user=user, log_type='entry', time_stamp=timezone.now())
+                        log.save()
+                        last_access = {'name': user.last_name, 'img': user.profile.photo.url}
+                        send_last_access(last_access)
+                    else:
+                        log = Log(user=user, log_type='leave', time_stamp=timezone.now())
+                        log.save()
+                else:
+                    log = Log(user=user, log_type='entry', time_stamp=timezone.now())
+                    log.save()
+                    last_access = {'name': user.last_name, 'img': user.profile.photo.url}
+                    send_last_access(last_access)
+                return JsonResponse(create_msg_to_send(create_status_msg(200, 'Authentication Successful',
+                                                                         user.last_name.split()[0]), RASP_RSAPUB_KEY))
+        else:
+            return JsonResponse(create_msg_to_send(create_status_msg(400, 'No permission!'), RASP_RSAPUB_KEY))
+    else:
+        return JsonResponse(create_msg_to_send(create_status_msg(405, 'Only POST method is allowed!'), RASP_RSAPUB_KEY))
 
 @csrf_exempt
 def check_audio_credential(request):

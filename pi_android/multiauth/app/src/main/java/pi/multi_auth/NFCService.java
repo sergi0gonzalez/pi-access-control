@@ -25,7 +25,6 @@ public class NFCService extends HostApduService {
         final SharedPreferences prefs = getSharedPreferences("pi.multi_auth", Context.MODE_PRIVATE);
         if (prefs.contains("credential"))
         {
-            response = bytesToHex("Hello desktop".getBytes());
 
             TimeBasedOneTimePasswordGenerator totp_manager = null;
             try {

@@ -24,6 +24,22 @@ __rsa_priv = __asym_obj.load_private_key('rasp_rsa', 'qwerty')
 __ecc_priv = __asym_obj.load_private_key('rasp_ecc', 'qwerty')
 
 
+def send_nfc_credential(identity, otp):
+    data = {'identity': identity, 'password': otp}
+    msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)
+    response = requests.post(server_url+'check_nfc_credential/', data=msg).json()
+    msg = json.loads(decrypt_msg(response, SERVER_SIGNPUB_KEY))
+    msg = json.loads(msg)
+    if DEBUG:
+        print('Message received --> ',msg)
+    if 'error' in msg and msg['message'] == 'Authentication Failed!':
+        portic_signal(23, False)
+    elif 'error' in msg:
+        portic_signal(24)
+        return
+    elif 'ok' in msg:
+        portic_signal(18, True, msg['user'])
+
 def send_rfid_credential(tag):
     data = {'tag': tag}
     msg = create_msg_to_send(json.dumps(data), SERVER_RSAPUB_KEY)

@@ -1,11 +1,14 @@
 package pi.multi_auth;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,8 +37,9 @@ import java.security.KeyPairGenerator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +49,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
-        final String token = intent.getStringExtra("token");
+        token = intent.getStringExtra("token");
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -97,6 +102,8 @@ public class MainActivity extends AppCompatActivity
                 {
                     JSONObject result = new JSONObject(response);
                     navEmail.setText(result.getString("email"));
+                    final SharedPreferences prefs = getSharedPreferences("pi.multi_auth", Context.MODE_PRIVATE);
+                    prefs.edit().putString("email", result.getString("email")).apply();
 
                 } catch (Exception e)
                 {
@@ -120,8 +127,6 @@ public class MainActivity extends AppCompatActivity
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
         queue.add(stringRequest2);
-
-
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -184,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_settings) {
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            CommFragment fragment = new CommFragment();
+            CommFragment fragment = new CommFragment(token);
             fragmentTransaction.replace(R.id.fcontainer, fragment);
             fragmentTransaction.commit();
         }
@@ -220,5 +225,4 @@ public class MainActivity extends AppCompatActivity
         }
         return hexString.toString();
     }
-
 }

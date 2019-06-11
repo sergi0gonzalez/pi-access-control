@@ -73,7 +73,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
+          <li class="nav-item">
             <a class="nav-link" href="/">Home
             </a>
           </li>
@@ -88,7 +88,7 @@
                     <a class="nav-link" href="/last_access">Last Access</a>
                 </li>
             {% endifequal %}
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown active">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Services
             </a>
@@ -142,7 +142,7 @@
                                         <tbody>
                                         {% for perm in permissions %}
                                             <tr>
-                                                <td>{{ perm.user.email }}</td>
+                                                <td><a href="/manage_user/{{ perm.user.email }}/">{{ perm.user.email }}</a></td>
                                                 <td>{{ perm.user.last_name }}</td>
                                                 <td><input type="checkbox" name="grant" value="{{ perm.user.email }}"></td>
                                             </tr>

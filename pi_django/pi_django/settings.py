@@ -140,4 +140,4 @@ REST_FRAMEWORK = {
 }
 
 # fix phone reqs
-#APPEND_SLASH=False
+#APPEND_SLASH = False

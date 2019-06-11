@@ -200,10 +200,11 @@ def manage_user(request, user_email):
     tparams = {'user_search': User.objects.get(username=user_email)}
 
     if request.method == 'POST':
-        user = User.objects.get(username=request.POST['manage_user'])
+        user = User.objects.get(username=user_email)
+        if 'btnDelete' in request.POST:
+            user.delete()
         if 'credential' in request.POST:
             secret = os.urandom(20).hex()
-            print('Secret ---> ',secret)
             cred = Credential(status="valid", user=user, data=secret)
             cred.save()
         if user.profile.rfid == '' and request.POST['manage_rfid'] != '':

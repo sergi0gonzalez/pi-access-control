@@ -93,8 +93,13 @@
             <div class="row" style="width: auto">
                 <input type="submit" class="profile-edit-btn" name="btnChange" value="Submit changes"/>
             </div>
-            <input type="hidden" name="manage_user" value="{{ user_search.username }}"/>
         </div>
+      </form>
+      <form action="" method="post">
+          {% csrf_token %}
+          <div class="row" style="width: auto; alignment: center;">
+                <input type="submit" name="btnDelete" value="Delete Account"/>
+            </div>
       </form>
   </div>
   <!-- /.container -->

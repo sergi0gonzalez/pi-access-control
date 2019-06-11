@@ -3,9 +3,9 @@ from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from tools.crypto import Asymmetric, Symmetric, HMAC
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 import requests
-import pyttsx3
+#import pyttsx3
 import json
 import time
 import sys
@@ -13,8 +13,8 @@ import sys
 DEBUG = True
 SERVER_RSAPUB_KEY = 'server_rsa.pub'
 SERVER_SIGNPUB_KEY = 'server_ecc.pub'
-#server_url = 'http://192.168.160.104:8080/api/'
-server_url = 'http://10.42.0.1:8080/api/'
+server_url = 'http://192.168.160.104:8080/api/'
+#server_url = 'http://10.42.0.1:8080/api/'
 
 __asym_obj = Asymmetric()
 __sym_obj = Symmetric()
@@ -33,12 +33,15 @@ def send_nfc_credential(identity, otp):
     if DEBUG:
         print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
-        portic_signal(23, False)
+        #portic_signal(23, False)
+        print("[*] AUTH FAILED")
     elif 'error' in msg:
-        portic_signal(24)
+        #portic_signal(24)
+        print("[*] ERROR")
         return
     elif 'ok' in msg:
-        portic_signal(18, True, msg['user'])
+        #portic_signal(18, True, msg['user'])
+        print("[*] AUTH SUCCESS")
 
 def send_rfid_credential(tag):
     data = {'tag': tag}

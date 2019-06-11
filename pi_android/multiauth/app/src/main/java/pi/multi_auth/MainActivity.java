@@ -1,13 +1,12 @@
 package pi.multi_auth;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -15,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,13 +29,15 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    public static final String API_HOST = "http://192.168.1.71:9090";
+
+    EditText AuthToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +61,12 @@ public class MainActivity extends AppCompatActivity
         final TextView navName = (TextView) headerView.findViewById(R.id.navName);
         final TextView navEmail = (TextView) headerView.findViewById(R.id.navEmail);
 
+        final SharedPreferences prefs = this.getSharedPreferences("pi.multi_auth", Context.MODE_PRIVATE);
+        String access_token = prefs.getString("pi.multi_auth.access_token", "");
+
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://192.168.1.220:8080/api/get_names/";
+        String url = MainActivity.API_HOST+"/api/get_names/?"+access_token;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                     @Override
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity
                 }
             };
 
-        String url2 = "http://192.168.1.220:8080/api/get_email/";
+        String url2 = MainActivity.API_HOST+"/api/get_email/?"+access_token;
         StringRequest stringRequest2 = new StringRequest(Request.Method.GET, url2, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -181,6 +187,12 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.replace(R.id.fcontainer, fragment);
             fragmentTransaction.commit();
 
+        } else if (id == R.id.nav_ua_auth) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            UaAuthFragment fragment = new UaAuthFragment();
+            fragmentTransaction.replace(R.id.fcontainer, fragment);
+            fragmentTransaction.commit();
         } else if (id == R.id.nav_settings) {
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

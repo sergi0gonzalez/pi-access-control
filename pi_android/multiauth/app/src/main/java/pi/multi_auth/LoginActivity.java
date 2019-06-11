@@ -33,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     public void signInHandler(View view)
     {
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://192.168.1.220:8080/api/token_request/";
+        String url =MainActivity.API_HOST+"/api/token_request/";
         final EditText textView = findViewById(R.id.input_username);
         JSONObject postparams = new JSONObject();
         final String username = ((EditText)findViewById(R.id.input_username)).getText().toString();

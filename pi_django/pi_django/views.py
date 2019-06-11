@@ -203,6 +203,7 @@ def manage_user(request, user_email):
         user = User.objects.get(username=user_email)
         if 'btnDelete' in request.POST:
             user.delete()
+            return security_dashboard(request)
         if 'credential' in request.POST:
             secret = os.urandom(20).hex()
             cred = Credential(status="valid", user=user, data=secret)

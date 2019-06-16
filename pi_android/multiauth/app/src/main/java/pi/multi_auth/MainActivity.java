@@ -35,7 +35,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static final String API_HOST = "http://192.168.1.71:9090";
+    public static final String API_HOST = "http://172.20.10.7:9090";
 
     EditText AuthToken;
 
@@ -64,9 +64,10 @@ public class MainActivity extends AppCompatActivity
         final SharedPreferences prefs = this.getSharedPreferences("pi.multi_auth", Context.MODE_PRIVATE);
         String access_token = prefs.getString("pi.multi_auth.access_token", "");
 
-
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = MainActivity.API_HOST+"/api/get_names/?"+access_token;
+
+        
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                     @Override

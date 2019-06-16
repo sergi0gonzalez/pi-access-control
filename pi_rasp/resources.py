@@ -84,7 +84,7 @@ def portic_signal(port, access=None, identity=None):
         if access == 'empty':
             time.sleep(0.5)
         elif access:
-            text_to_speech('Welcome, '+identity+'!')
+            text_to_speech('Welcome, '+identity+ '!')
         else:
             text_to_speech('Access denied!')
     else:

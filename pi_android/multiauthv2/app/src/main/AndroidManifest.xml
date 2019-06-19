@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.pi.multiauth_v2">
+
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="FEATURE_NFC_HOST_CARD_EMULATION"/>
+    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".background.QRIntentService"
+            android:enabled="true" />
+        <service android:name=".background.NFCService" android:exported="true"
+            android:permission="android.permission.BIND_NFC_SERVICE">
+            <intent-filter>
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE"/>
+            </intent-filter>
+            <meta-data android:name="android.nfc.cardemulation.host_apdu_service" android:resource="@xml/apduservice"/>
+        </service>
+
+        <activity
+            android:name=".NFCActivity"
+            android:label="NFC"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppThemeWithBar" />
+        <activity
+            android:name=".BluetoothActivity"
+            android:label="Bluetooth"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppThemeWithBar" />
+        <activity
+            android:name=".SoundActivity"
+            android:label="Sound"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppThemeWithBar" />
+        <activity
+            android:name=".QRActivity"
+            android:label="QR Code"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppThemeWithBar" />
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name">
+        </activity>
+    </application>
+
+</manifest>

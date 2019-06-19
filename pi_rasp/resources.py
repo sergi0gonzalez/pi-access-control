@@ -13,8 +13,9 @@ import sys
 DEBUG = True
 SERVER_RSAPUB_KEY = 'server_rsa.pub'
 SERVER_SIGNPUB_KEY = 'server_ecc.pub'
-server_url = 'http://192.168.160.104:8080/api/'
+#server_url = 'http://192.168.160.104:8080/api/'
 #server_url = 'http://10.42.0.1:8080/api/'
+server_url = 'http://localhost:8080/api/'
 
 __asym_obj = Asymmetric()
 __sym_obj = Symmetric()
@@ -33,15 +34,12 @@ def send_nfc_credential(identity, otp):
     if DEBUG:
         print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
-        #portic_signal(23, False)
-        print("[*] AUTH FAILED")
+        portic_signal(23, False)
     elif 'error' in msg:
-        #portic_signal(24)
-        print("[*] ERROR")
+        portic_signal(24)
         return
     elif 'ok' in msg:
-        #portic_signal(18, True, msg['user'])
-        print("[*] AUTH SUCCESS")
+        portic_signal(18, True, msg['user'])
 
 def send_rfid_credential(tag):
     data = {'tag': tag}
@@ -69,12 +67,14 @@ def send_audio_credential(identity, otp):
     if DEBUG:
         print('Message received --> ',msg)
     if 'error' in msg and msg['message'] == 'Authentication Failed!':
-        portic_signal(23, False)
+        #portic_signal(23, False)
+        pass
     elif 'error' in msg:
-        portic_signal(24)
+        #portic_signal(24)
         return
     elif 'ok' in msg:
-        portic_signal(18, True, msg['user'])
+        #portic_signal(18, True, msg['user'])
+        pass
 
 
 def send_qrcode_credential(identity, otp):
@@ -149,8 +149,8 @@ def create_status_msg(code, msg):
 
 
 def decrypt_msg(data, sign_key):
-    if not verify_signature_msg(data['signature'], data['msg'], sign_key):
-        return create_status_msg(500, 'Client Warning: Something is wrong with the signature!')
+    #if not verify_signature_msg(data['signature'], data['msg'], sign_key):
+    #    return create_status_msg(500, 'Client Warning: Something is wrong with the signature!')
     if check_hmac(data['mac_key'], data['msg'], data['mac']):
         dec_key = __asym_obj.decrypt_msg(__rsa_priv, data['key']).decode('utf-8')
         dec_key = json.loads(dec_key)

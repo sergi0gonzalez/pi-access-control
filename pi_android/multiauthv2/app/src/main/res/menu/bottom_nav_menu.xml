@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_authenticate"
+        android:icon="@drawable/ic_authenticate"
+        android:title="Authenticate" />
+
+    <item
+        android:id="@+id/navigation_credentials"
+        android:icon="@drawable/ic_credentials"
+        android:title="Credential" />
+
+    <item
+        android:id="@+id/navigation_logs"
+        android:icon="@drawable/ic_logs"
+        android:title="Logs" />
+
+
+</menu>

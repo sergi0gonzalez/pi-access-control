@@ -11,7 +11,7 @@ class DEVICE_REMOVED(Exception):
 
 class Citizen_Data(object):
    
-    def __init__(self, lib='/usr/lib64/opensc-pkcs11.so'):
+    def __init__(self, lib='libpteidpkcs11.so'):
         self.pkcs11 = PyKCS11.PyKCS11Lib()
         self.pkcs11.load(lib)
         # Filter attributes

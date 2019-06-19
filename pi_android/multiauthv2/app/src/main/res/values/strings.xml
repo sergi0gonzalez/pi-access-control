@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">IEETASec</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="base_url">http://192.168.1.220:8080/</string>
+    <string name="apdu_desc">APDU service for MULTIMETHOD AUTH APP</string>
+</resources>

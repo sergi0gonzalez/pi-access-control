@@ -32,8 +32,6 @@ def add_user():
 
     name = input("Enter Name:")
     dir = "./voice_database/" + name
-
-
     choice = input ("Enter number 0-10:")
 
 
